@@ -1,0 +1,12 @@
+
+<div class="flex flex-col items-center min-h-screen-header md:px-0 px-8">
+       <span class="text-lg font-semibold self-center mt-20">
+        "<%= @room_name %>" requires password
+       </span> 
+    <.simple_form class="w-[80%]" phx-submit="save" id="password_form" for={@password_form} as={:password} action_style_justify="justify-center">
+        <.input field={@password_form[:password]} label="Password"/>
+        <:actions>
+            <.button>Submit</.button>
+        </:actions>
+        </.simple_form>
+    </div>

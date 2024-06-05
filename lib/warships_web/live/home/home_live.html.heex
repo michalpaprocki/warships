@@ -1,0 +1,87 @@
+
+<div class="py-8">
+  <%= if @nickname do %>
+  <div class="w-full flex justify-center">hi <%= @nickname %>
+
+</div>
+  <% end %>
+</div>
+
+<div class="w-full flex justify-center">
+    
+  <%= if @modal_state == true do %>
+  
+  <.modal id="room-modal" show={@modal_state} on_cancel={JS.push("close_modal")}>
+  
+    <.simple_form for={@room_form} phx-change="validate" phx-submit="save" class="flex flex-col items-center">
+      <.input field={@room_form[:room_name]} label="Room Name" />
+      <.input field={@room_form[:with_password]} label="Password ?" type="checkbox" phx-click="req_pwd"/>
+  
+  
+      <%= if @require_password == true do %>
+      <.input type="password" field={@room_form[:room_password]} label="Room Password" />
+      <% end %>
+  
+      <:actions>
+        <.button>Create</.button>
+      </:actions>
+    </.simple_form>
+  </.modal>
+  <% end %>
+  
+  <.button class="mt-7" phx-click="open_modal">Create Room</.button>
+
+    </div>
+<section class="w-full py-8 px-2 flex flex-col items-center">
+<div class="flex gap-2 md:flex-row flex-col items-center">
+  <div class="flex gap-2 items-center p-2">
+    <label>Show full rooms: </label>
+    <input type="checkbox" name="show_full" id="show_full_checker" checked={@show_full} phx-click="toggle_show_full">
+  </div>
+  <div class="p-2">
+    <.button phx-click="sort" phx-value-sort={ if @sort == :asc, do: :desc, else: :asc}>
+      Order:&nbsp;<span class={"inline-block #{if @sort == :asc, do: "rotate-0", else: "rotate-180"} transition"}>▲</span>
+    </.button>
+  </div>
+</div>
+  <%= if length(@rooms_data) > 0 do %>
+  <div class="w-[80%] grid ring-purple-500 ring-2 gap-1 p-2 shadow-black shadow-md">
+   <%=  for f <- @rooms_data do %>
+      <%= if @show_full == true do %>
+       <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
+        <span><%= f.room %></span>
+        <div>
+          <span>Players&nbsp;:</span>
+          <span><%= f.players %> / 2</span>
+        </div>
+      </.link>
+      <% else %> 
+        <%= cond do %>
+          <% f.players == 2 -> %>
+            <% nil %>
+          <% true -> %>
+          <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
+            <span><%= f.room %></span>
+            <div>
+              <span>Players&nbsp;:</span>
+              <span><%= f.players %> / 2</span>
+            </div>
+          </.link>
+
+        <% end %>
+      <% end %>
+      
+      
+    <% end %>
+  </div>
+  <% else %>
+  <div class="w-[80%] flex justify-center ring-2 ring-purple-700">
+    <span class="p-2 py-8 font-semibold uppercase">no rooms open</span>
+
+
+  </div>
+
+ 
+  <% end %>
+
+</section>

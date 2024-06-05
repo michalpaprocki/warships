@@ -1,0 +1,95 @@
+
+<div class="flex flex-col select-none bg-blue-500 shadow-lg shadow-black  p-1">
+  <%= if @game.turn == String.to_atom(@nickname) do%>
+  <div class="mt-2 transition self-center md:translate-y-32 xl:translate-y-0 sm:p-4 p-2 animate-pulse bg-violet-500 text-white rounded-lg mb-4 font-semibold shadow-black shadow-sm z-10">
+    Give &apos;em hell - Attack !
+  </div>
+  <% else %>
+  <div class="mt-2 transition self-center md:translate-y-32 xl:translate-y-0 sm:p-4 p-2 animate-pulse bg-red-500 text-white rounded-lg mb-4 font-semibold shadow-black shadow-sm z-10">
+   Brace for impact - Any moment now...
+  </div>
+  <% end %>
+ 
+    <.live_component module={WarshipsWeb.Game.PlayersInfo.PlayersInfo} id="players_info" game={@game} nickname={@nickname}  />
+  
+  <div class="relative m-1  before:z-10 before:absolute before:w-0 before:content-[''] before:h-full before:bg-black before:shadow-glow_accented before:animate-traverse_x after:absolute after:w-full after:content-[''] after:h-0 after:bg-black after:shadow-glow_accented after:animate-traverse_y sm:w-full md:w-[750px] lg:w-[1000px] overflow-hidden">
+    <div class="flex justify-center gap-2 py-4">
+      <button title="Shoot enemy ships here!"  phx-target={@myself} phx-click="set_board_panel" phx-value-panel="left" class={"font-semibold p-1 rounded-md md:rotate-0 rotate-90 transition #{if @panel == "left", do: "bg-violet-500 text-gray-200 cursor-default" , else: "bg-black text-gray-200 hover:text-black hover:bg-violet-500  hover:shadow-lg hover:shadow-violet-500 hover:-translate-y-1" }"}>
+        <span class="border-r-2 p-1 border-gray-300">&#9723;</span><span class="border-l-2 p-1 border-gray-300">&#9724;</span>
+      </button>
+      <button title="Show both shooting board and enemy shots."  phx-target={@myself} phx-click="set_board_panel" phx-value-panel="both" class={"font-semibold p-1 rounded-md md:rotate-0 rotate-90 transition #{if @panel == "both", do: "bg-violet-500 text-gray-200 cursor-default" , else: "bg-black text-gray-200 hover:text-black hover:bg-violet-500  hover:shadow-lg hover:shadow-violet-500 hover:-translate-y-1" }"}>
+        <span class="border-r-2 p-1 border-gray-300">&#9723;</span><span class="border-l-2 p-1 border-gray-300">&#9723;</span>
+        </button>
+      <button title="Show your ships and enemy shots." phx-target={@myself} phx-click="set_board_panel" phx-value-panel="right" class={"font-semibold p-1 rounded-md md:rotate-0 rotate-90 transition #{if @panel == "right", do: "bg-violet-500 text-gray-200 cursor-default" , else: "bg-black text-gray-200 hover:text-black hover:bg-violet-500  hover:shadow-lg hover:shadow-violet-500 hover:-translate-y-1" }"}>
+        <span class="border-r-2 p-1 border-gray-300">&#9724;</span><span class="border-l-2 p-1 border-gray-300">&#9723;</span>
+        </button>
+    </div>
+    <div class={"#{if @panel == "both", do: "flex md:flex-row flex-col md:h-[500px] ", else: "block h-[500px]"} transition"}>
+      
+      <div class={"sm:w-full md:w-[750px] lg:w-[1000px] h-[500px] grid grid-cols-10 grid-rows-10 gap-1 md:p-2  p-1 #{if @panel == "left" || @panel == "both", do: "translate-x-0", else: "translate-x-[-100%]" } transition #{ if @game.turn == String.to_atom(@nickname) , do: "animate-shoot_now", else: ""}"}>
+        <%= for x <- @x_range do %>
+          <%= for y <- @y_range do %>
+            <%= cond do %>
+    
+            <% Enum.member?(List.flatten(Enum.map(Map.to_list(Map.get(@game.players, String.to_atom(@nickname)).ships_hit), fn {_k,v} -> elem(v, 1) end)), {to_string(x),to_string(y)}) &&  elem(elem(Enum.at(Enum.filter(Map.get(@game.players, String.to_atom(@nickname)).ships_hit, fn {k,v} -> Enum.member?(elem(v, 1), {to_string(x),to_string(y)}) end ), 0),1),0) == :sunk ->  %> 
+            <div class="md:text-sm ring-1 ring-emerald-500 relative rounded-md bg-net_sunk bg-0.75x0.75 after:content-['sunk'] after:opacity-0 after:uppercase after:font-semibold after:animate-dolph_ after:top-0 after:translate-y-6 after:left-[0%] after:absolute hover:after:opacity-100 hover:after:translate-x-[-50%] hover:after:translate-y-[50%] after:transition"></div>
+    
+            <% Enum.member?(List.flatten(Enum.map(Map.to_list(Map.get(@game.players, String.to_atom(@nickname)).ships_hit), fn {_k,v} -> elem(v, 1) end)), {to_string(x),to_string(y)}) ->  %> 
+            <div class="md:text-sm relative rounded-md ring-1 bg-net_hit bg-0.5x0.5 ring-orange-500 after:content-['hit'] after:opacity-0 after:uppercase after:font-semibold after:animate-dolph_ after:top-0 after:translate-y-6 after:left-[0%] after:absolute hover:after:opacity-100 hover:after:translate-x-[-50%] hover:after:translate-y-[50%] after:transition"></div>
+            
+            <% Enum.member?(Map.get(@game.players, String.to_atom(@nickname)).shots_coords, {to_string(x),to_string(y)}) ->  %> 
+            <div class="md:text-sm relative ring-1 ring-red-500 bg-net_miss bg-0.25x0.25 rounded-md after:content-['miss'] after:opacity-0 after:uppercase after:font-semibold after:animate-dolph_ after:top-0 after:translate-y-6 after:left-[0%] after:absolute hover:after:opacity-100 hover:after:translate-x-[-50%] hover:after:translate-y-[50%] after:transition "></div>
+    
+            <% true -> %>
+        
+            <div phx-click="shoot" phx-target={@myself} phx-value-x={x} phx-value-y={y} 
+            class="ring-blue-800  ring-1 md:ring-0 md:text-sm rounded-md text-gray-700 hover:text-black transition text-sm uppercase font-semibold flex justify-center items-center cursor-pointer hover:shadow-glow hover:bg-emerald-500 animate-hue_rotate bg-blue-500">
+                <%= x %> <%= y %>
+            
+            </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+  
+      <div class={"sm:w-full md:w-[750px] lg:w-[1000px] min-h-[500px] grid grid-cols-10 grid-rows-10 gap-1 md:p-4 p-1 #{if @panel == "right", do: "translate-y-[-100%]", else: "translate-y-0" } transition #{ if @game.turn != String.to_atom(@nickname) , do: "animate-alert", else: ""} "}>
+        <%= for x <- @x_range do %>
+          <%= for y <- @y_range do %>
+          <%= cond do %>
+        
+          <% Enum.member?(List.flatten(Enum.map(Enum.at(Enum.map(Enum.filter(@game.players, fn x-> elem(x,0) != String.to_atom(@nickname) end), fn y -> elem(y, 1).ships_hit end ), 0), fn z -> elem(elem(z,1),1) end)), {to_string(x),to_string(y)}) && 
+          elem(elem(Enum.at(Enum.filter(Map.get(@game.players,elem(Enum.at(Enum.filter(@game.players, fn x -> elem(x, 0) != String.to_atom(@nickname) end), 0),0)).ships_hit, fn {_k,v} -> Enum.member?(elem(v, 1), {to_string(x),to_string(y)}) end ), 0),1),0) == :sunk  -> %>
+          
+          
+          <div class="md:text-sm relative ring-2 ring-black bg-black text-gray-300 uppercase rounded-md flex items-center justify-center md:font-semibold font-semibold text-[0.7rem]">sunk</div>
+          <% Enum.member?(List.flatten(Enum.map(Enum.at(Enum.map(Enum.filter(@game.players, fn x-> elem(x,0) != String.to_atom(@nickname) end), fn y -> elem(y, 1).ships_hit end ), 0), fn z -> elem(elem(z,1),1) end)), {to_string(x),to_string(y)}) && 
+          elem(elem(Enum.at(Enum.filter(Map.get(@game.players,elem(Enum.at(Enum.filter(@game.players, fn x -> elem(x, 0) != String.to_atom(@nickname) end), 0),0)).ships_hit, fn {_k,v} -> Enum.member?(elem(v, 1), {to_string(x),to_string(y)}) end ), 0),1),0) == :hit  -> %>
+          
+          
+          <div class="before:md:text-sm relative ring-2 rounded-md ring-orange-500 before:bg-stripes before:content-['HIT'] bg-black before:w-full before:h-full before:absolute before:text-gray-300 before:uppercase before:rounded-md before:flex before:items-center before:justify-center before:md:font-semibold before:font-semibold before:text-[0.7rem]"></div>
+  
+          <% Enum.member?(Map.get(@game.players, elem(Enum.at(Enum.filter(@game.players, fn x -> elem(x, 0) != String.to_atom(@nickname) end),0),0)).shots_coords, {to_string(x),to_string(y)}) ->  %> 
+          <div class="md:text-sm relative ring-1 ring-red-500 bg-net_miss bg-0.25x0.25 rounded-md after:content-['miss'] after:opacity-0 after:uppercase after:font-semibold after:animate-dolph_ after:top-0 after:translate-y-6 after:left-[0%] after:absolute hover:after:opacity-100 hover:after:translate-x-[-50%] hover:after:translate-y-[50%] after:transition "></div>
+  
+          <% Enum.member?(List.flatten(Enum.map(Enum.at(Enum.map(@my_ships.m1, fn x -> elem(x, 1) end), 1), fn y ->elem(y, 1).coords  end)), {to_string(x),to_string(y)}) ->  %> 
+          <div class="after:font-semibold md:text-sm relative bg-violet-200 bg-0.25x0.25 rounded-md ring-blue-800 ring-1 md:ring-0 text-gray-700  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate after:content-['m1'] after:absolute after:bg-white after:text-gray-700 after:rounded-md after:px-4 after:py-2  hover:after:block after:hidden after:opacity-0 hover:after:opacity-100 ">  <%= x %> <%= y %></div>
+          <% Enum.member?(List.flatten(Enum.map(Enum.at(Enum.map(@my_ships.m2, fn x -> elem(x, 1) end), 1), fn y ->elem(y, 1).coords  end)), {to_string(x),to_string(y)}) ->  %> 
+          <div class="after:font-semibold md:text-sm relative bg-violet-400 bg-0.25x0.25 rounded-md ring-blue-800 ring-1 md:ring-0 text-gray-700  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate after:content-['m2'] after:absolute after:bg-white after:text-gray-700 after:rounded-md after:px-4 after:py-2  hover:after:block after:hidden after:opacity-0 hover:after:opacity-100 ">  <%= x %> <%= y %></div>
+          <% Enum.member?(List.flatten(Enum.map(Enum.at(Enum.map(@my_ships.m3, fn x -> elem(x, 1) end), 1), fn y ->elem(y, 1).coords  end)), {to_string(x),to_string(y)}) ->  %> 
+          <div class="after:font-semibold md:text-sm relative bg-violet-600 bg-0.25x0.25 rounded-md ring-blue-800 ring-1 md:ring-0 text-gray-300  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate after:content-['m3'] after:absolute after:bg-white after:text-gray-700 after:rounded-md after:px-4 after:py-2  hover:after:block after:hidden after:opacity-0 hover:after:opacity-100 ">  <%= x %> <%= y %></div>
+          <% Enum.member?(List.flatten(Enum.map(Enum.at(Enum.map(@my_ships.m4, fn x -> elem(x, 1) end), 1), fn y ->elem(y, 1).coords  end)), {to_string(x),to_string(y)}) ->  %> 
+          <div class="after:font-semibold md:text-sm relative bg-violet-800 bg-0.25x0.25 rounded-md ring-blue-800 ring-1 md:ring-0 text-gray-300  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate after:content-['m4'] after:absolute after:bg-white after:text-gray-700 after:rounded-md after:px-4 after:py-2  hover:after:block after:hidden after:opacity-0 hover:after:opacity-100 ">  <%= x %> <%= y %></div>
+          <% true -> %>
+      
+          <div phx-click="shoot" phx-target={@myself} phx-value-x={x} phx-value-y={y} 
+          class="ring-blue-800  ring-1 md:ring-0 md:text-sm rounded-md text-gray-700  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate bg-blue-500">
+              <%= x %> <%= y %>
+          
+          </div>
+          <% end %>
+        <% end %>
+      <% end %>
+      </div>
+    </div>
+  </div>
+</div>

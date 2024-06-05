@@ -1,0 +1,17 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* This file is for your main application CSS */
+
+
+:root {
+    --headerH: 5rem;
+    --stripes_color: rgb(104, 104, 104);
+    --glow_color: rgb(45, 168, 61);
+    --glowAccented_color: rgba(255, 255, 255);
+    --miss_color: rgba(255, 0, 0, 0.2);
+    --hit_color: rgba(255, 166, 0);
+    --sunk_color: green;
+    --alert_color: rgb(170, 120, 28);
+}

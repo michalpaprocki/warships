@@ -1,0 +1,51 @@
+
+<div class="w-full flex justify-center my-10">
+  <span class="font-semibold p-2"><%= @room_name %></span>
+</div>
+
+<div class="flex flex-col md:items-center w-full mb-4">
+  <%= case @game.state do %>
+    <% :awaiting_players -> %>
+    
+      <div class="py-6 flex justify-center items-center gap-6 flex-col">
+        <span class="">Awaiting opponent...</span>
+        <.live_component module={WarshipsWeb.Spinners.Spinner1} id="spinner1" />
+        <.button class="uppercase" phx-click="leave">leave</.button>
+      </div>
+    <% :prep -> %>
+
+      <.live_component module={WarshipsWeb.Game.PrepBoard.PrepBoard} id="prep_board" game={@game} nickname={@nickname}  />
+    <% :game -> %>
+      <div class="relative">
+        <.live_component module={WarshipsWeb.Game.Board.Board} id="board" game={@game} nickname={@nickname} /> 
+      </div>
+
+ 
+    <% :game_over -> %>
+
+      <span class="uppercase text-xl">Game over </span>
+      <span class="uppercase text-xl">winner : <%= @game.winner %> </span>
+      <div class="flex flex-col gap-2 py-7 items-center">
+
+      <%= cond do %>
+      <% @game.rematch.challenger == @nickname && @game.rematch.request -> %>
+        <span>Waiting for a response...</span>
+        <.live_component id="spinner" module={WarshipsWeb.Spinners.Spinner2} />
+        <.button class="uppercase" phx-click="leave">leave</.button>
+      <% @game.rematch.challenger != @nickname && @game.rematch.request -> %>
+        <.button class="uppercase" phx-click="accept_rematch">accept</.button>
+        <.button class="uppercase" phx-click="leave">leave</.button>
+      <% @game.winner == @nickname -> %>
+          <.button class="uppercase" phx-click="request_another">Request another game</.button>
+          <.button class="uppercase" phx-click="leave">leave</.button>
+      <% @game.winner != @nickname -> %>
+          <.button class="uppercase" phx-click="request_another">Request revenge game</.button>
+          <.button class="uppercase" phx-click="leave">leave</.button>
+      <% end %>
+      
+    </div>
+    <% _-> %>
+      <span>DEFAULT_STATE</span>
+   <% end %>
+   
+</div>

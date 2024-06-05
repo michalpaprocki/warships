@@ -1,0 +1,27 @@
+<aside  phx-target={@myself} phx-click-away="close_chat_window" id="chat" phx-hook="test"
+  class={"shadow-md shadow-black #{if @chat_open, do: "translate-x-0", else: "-translate-x-[300px]"} z-50 absolute overflow ml-1 bg-gradient-to-b from-violet-500 to-violet-950 w-[300px] flex-col flex justify-between p-1 pb-6 transition"}
+>
+
+  <button class={"#{if @chat_open, do: "hidden", else: "block"} absolute translate-x-16 top-0 font-semibold right-0 flex flex-col gap-1 bg-black text-white hover:bg-white hover:text-black hover:ring-2 hover:ring-black hover:scale-105 hover:animate-pulse transition p-2 rounded-sm  uppercase"} phx-click="open_chat_window" phx-target={@myself}>
+    chat
+
+  </button>
+  <div class="overflow-auto ring-2 ring-violet-500 pb-1">
+
+    <%= for jr <- @joined_rooms do %>
+    <button
+     phx-click={"activate_"} phx-value-room={elem(jr, 0)} phx-target={@myself}
+     class={"#{if @selected_room == elem(jr, 0), do: "bg-white text-black " ,else: "bg-black text-white"} p-1 uppercase text-xs font-semibold hover:text-black hover:bg-white transition "}><%= elem(jr, 0) %> </button>
+
+    <% end %>
+  </div>
+    <%= for jr <- @joined_rooms do %>
+      <%= if @selected_room == elem(jr, 0) do %>
+      <.live_component module={WarshipsWeb.Chat.ChatRoom.ChatRoom} room={elem(jr, 0)} users={elem(jr, 1).chat_members} id={elem(jr, 0)} nickname={@nickname} messages={elem(jr, 1).messages} /> 
+
+      <% end %>
+
+    <% end %>
+
+
+</aside>

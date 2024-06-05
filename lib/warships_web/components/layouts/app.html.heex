@@ -1,0 +1,28 @@
+<script>
+  window.userToken = "<%= assigns[:user_token] %>";
+</script>
+
+<header class="h-header w-full flex justify-between items-center px-8 bg-gradient-to-br from-violet-400  to-violet-900 shadow-glow shadow-black relative">
+ 
+    <.link class="uppercase font-semibold p-2 bg-black text-white text-xl hover:bg-white hover:text-black hover:ring-2 hover:ring-black hover:scale-105 transition rounded-sm " navigate={~p"/"}>Warships</.link>
+  
+  <div class="flex gap-2 text-white">
+    <span class="p-4">options</span>
+    <span class="p-4"><%= @nickname %></span>
+  </div>
+</header>
+
+<main class="min-h-screen-header ">
+  <div class="mx-auto flex">
+    <.flash_group flash={@flash} /> 
+
+    <%= if @nickname do %> 
+
+
+        <.live_component module={WarshipsWeb.Chat.Chat} joined_rooms={@joined_rooms} id={:chat}  nickname={@nickname} /> 
+
+    <% end %>
+    <div class="w-full">
+      <%= @inner_content %></div>
+  </div>
+</main>

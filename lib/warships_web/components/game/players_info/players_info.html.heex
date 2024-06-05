@@ -1,0 +1,53 @@
+
+  <div class="xl:absolute flex justify-between gap-2 xl:-z-10 bg-blue-500 xl:shadow-sm xl:shadow-black xl:left-[50%] xl:translate-x-[-50%] xl:translate-y-[40%] xl:w-[1250px] transition">
+    <%= for p <- @players_info do %>
+
+      <%= if Atom.to_string(elem(p, 0)) != @nickname do %>
+      <div class="order-2 flex flex-col md:text-base text-sm">
+        <span class="p-1 uppercase font-semibold">ships lost</span>
+        <%= Enum.map(Map.to_list(elem(p, 1)), fn x->   %>
+      <div class="flex p-1">
+        <%= cond do %>
+          <% elem(x, 0) == "m4" -> %>
+          <span class="px-3 uppercase bg-violet-800 text-gray-300"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 1</span>
+          <% elem(x, 0) == "m3" -> %>
+          <span class="px-3 uppercase bg-violet-600 text-gray-300"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 2</span>
+          <% elem(x, 0) == "m2" -> %>
+          <span class="px-3 uppercase bg-violet-400 text-gray-700"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 3</span>
+          <% true -> %>
+          <span class="px-3 uppercase bg-violet-200 text-gray-700"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 4</span>
+         <% end %>
+      </div>
+      <% end) %>
+      </div>
+      <% else %>
+      <div class="order-1 flex flex-col md:text-base text-sm">
+        <span class="p-1 uppercase font-semibold">ships sunk</span>
+        <%= Enum.map(Map.to_list(elem(p, 1)), fn x->   %>
+      <div class="flex p-1">
+        <%= cond do %>
+          <% elem(x, 0) == "m4" -> %>
+          <span class="px-3 uppercase bg-violet-800 text-gray-300 order-1"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 1</span>
+          <% elem(x, 0) == "m3" -> %>
+          <span class="px-3 uppercase bg-violet-600 text-gray-300 order-1"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 2</span>
+          <% elem(x, 0) == "m2" -> %>
+          <span class="px-3 uppercase bg-violet-400 text-gray-700 order-1"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 3</span>
+          <% true -> %>
+          <span class="px-3 uppercase bg-violet-200 text-gray-700 order-1"> <%= elem(x,0) %></span>
+          <span class="px-3"> <%= elem(x,1) %> / 4</span>
+         <% end %>
+      </div>
+      <% end) %>
+      </div>
+      <% end %>
+
+  <% end %>
+  </div>
+

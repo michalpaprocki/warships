@@ -1,0 +1,36 @@
+<div>
+  <div class="flex justify-between flex-grow-[1] gap-1">
+    <div
+      id="chat-messages"
+      class="p-1 text-sm bg-white w-full overflow-y-auto h-[80vh] message-container flex flex-col-reverse"
+    >
+      <%= for m <- @messages do %>
+      <div>
+        <span><%= m.user %>:</span>
+        <span><%= m.body %></span>
+      </div>
+      <% end %>
+    </div>
+    <div
+      id="presence_list"
+      class="p-1 w-[15ch] text-sm bg-white h-[80vh] flex flex-col"
+    >
+      <%= for u <- @users do %>
+      <span class="text-ellipsis overflow-x-hidden"><%= u %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <form id="chat_form" phx-submit="send" phx-change="check_msg" phx-target={@myself} class="mt-2 text-sm flex justify-between gap-1 flex-grow-[0]">
+    <input
+    name="msg"
+    placeholder={"Message #{@room}..."}
+    type="text"
+    value={@msg}
+    class="w-full rounded-md focus:outline-violet-500 focus:outline-1 focus:outline-offset-0 border-none focus:ring-0"
+    />
+    <button  phx-target={@myself} class="font-bold p-2 text-sm hover:bg-black hover:text-white bg-white rounded-md">
+      SEND
+    </button>
+  </form>
+</div>
