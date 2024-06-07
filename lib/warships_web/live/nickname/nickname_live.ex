@@ -1,6 +1,5 @@
 defmodule WarshipsWeb.Nickname.NicknameLive do
   alias Warships.ChatStore
-  alias Warships.UserStore
   use WarshipsWeb, :live_view
 
   def mount(_params, session, socket) do
@@ -35,13 +34,6 @@ defmodule WarshipsWeb.Nickname.NicknameLive do
 
     else
 
-      case UserStore.insert_user(nickname) do
-        {:ok} ->
-          {:noreply, redirect(socket, to: ~p"/nickname/#{nickname}")}
-
-############################ think how to better handle userstore && where and how remove users from userstore ############################
-
-        {:error, _} ->
           members_online = ChatStore.get_chat_members(:CS_lobby)
           if Enum.member?(members_online, nickname) do
 
@@ -50,7 +42,7 @@ defmodule WarshipsWeb.Nickname.NicknameLive do
             {:noreply, redirect(socket, to: ~p"/nickname/#{nickname}")}
           end
 
-      end
+
     end
   end
 end

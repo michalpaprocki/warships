@@ -1,4 +1,5 @@
 defmodule WarshipsWeb.PageController do
+
   use WarshipsWeb, :controller
 
   def home(conn, _params) do
@@ -28,6 +29,7 @@ defmodule WarshipsWeb.PageController do
         redirect(conn, to: ~p"/nickname")
 
       nickname ->
+
         conn
         |> assign(:nickname, nickname)
     end

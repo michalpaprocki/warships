@@ -70,7 +70,7 @@ defmodule Warships.UserStore do
     name_string = to_string(name)
     GenServer.call(@name, {:delete, %{:name => name_string}})
   end
-
+# # # # # # # # # # # #  # handlers # # # # # # # # # # # #  #
   def handle_call({:insert, params}, _from, state) do
     user = :ets.insert_new(:users, {params.name})
 

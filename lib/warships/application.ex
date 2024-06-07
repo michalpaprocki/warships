@@ -11,10 +11,9 @@ defmodule Warships.Application do
     children = [
       WarshipsWeb.Telemetry,
       Warships.RoomStore,
-      Warships.UserStore,
       Warships.ChatStore,
       Warships.RoomSupervisor,
-      Warships.RoomsLiveMonitor,
+      Warships.LiveMonitor,
       # Warships.Repo,
       {DNSCluster, query: Application.get_env(:warships, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Warships.PubSub},

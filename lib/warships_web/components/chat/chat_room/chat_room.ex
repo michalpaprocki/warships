@@ -12,8 +12,12 @@ defmodule WarshipsWeb.Chat.ChatRoom.ChatRoom do
         {:noreply, socket}
         _->
 
-
-          WarshipsWeb.Endpoint.broadcast("room:lobby", "new_msg", msg)
+          WarshipsWeb.Endpoint.broadcast("chat", "new_msg", %{
+            target: "lobby",
+            user: socket.assigns.nickname,
+            body: msg,
+            sent_at: :os.system_time()
+          })
 
           {:noreply, socket|> assign(:msg, "") }
     end

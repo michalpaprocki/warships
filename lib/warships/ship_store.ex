@@ -67,7 +67,7 @@ store_name: "name"
         players = Map.put(state.players, String.to_atom(params.name) ,%{:map_of_ships=>%{:m1=>%{:ships=>%{},:max=>4, :max_hits => 1},:m2=>%{:ships=>%{},:max=>3, :max_hits => 2},:m3=>%{:ships=>%{},:max=>2, :max_hits => 3},:m4=>%{:ships=>%{},:max=>1, :max_hits => 4}}})
         new_state = Map.replace(state,:players,  players)
 
-        {:reply, String.to_atom(params.name) , new_state}
+        {:reply, "#{params.name} added as player" , new_state}
 
       true ->
         {:reply,{:error, "Players already at full"}, state}
@@ -78,7 +78,7 @@ store_name: "name"
       players = Map.delete(state.players, String.to_atom(params.name))
       new_state = Map.replace(state, :players, players)
 
-      {:reply, String.to_atom(params.name) , new_state}
+      {:reply, "#{params.name} removed as player" , new_state}
   end
 
   def handle_call({:add_ship, params}, _from, state) do

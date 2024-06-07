@@ -1,5 +1,6 @@
 defmodule WarshipsWeb.LiveSessionPlugs.OnMountPlug do
   import Phoenix.LiveView.Utils
+  alias Warships.ChatStore
   alias WarshipsWeb.Auth.Auth
 
   def on_mount(:default, _params, session, socket) do
@@ -7,7 +8,7 @@ defmodule WarshipsWeb.LiveSessionPlugs.OnMountPlug do
 
     if(nickname != nil) do
       token = Auth.encrypt_token(socket, nickname)
-
+      ChatStore.add_chat_member(:CS_lobby, nickname)
       {:cont,
        socket
        |> assign_new(:joined_rooms, fn -> %{  :lobby => %{
@@ -20,4 +21,5 @@ defmodule WarshipsWeb.LiveSessionPlugs.OnMountPlug do
       {:cont, socket}
     end
   end
+
 end

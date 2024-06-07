@@ -54,7 +54,7 @@ let socket = new Socket("/socket", { params: { token: window.userToken } });
 // Finally, connect to the socket:
 const userToken = window.userToken;
 if (userToken) {
-  socket.connect();
+  // socket.connect();
 
   // const lobbyChannel = socket.channel(`room:lobby`, {});
   // const lobbyChatInput = document.querySelector("#chat-input");

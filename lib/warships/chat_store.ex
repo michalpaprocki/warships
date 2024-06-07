@@ -103,7 +103,7 @@ defmodule Warships.ChatStore do
   end
 
   def handle_call({:async_get_all}, _from, state) do
-    {:reply, MapSet.to_list(state.chat_members), state}
+    {:reply, Enum.sort(MapSet.to_list(state.chat_members), :desc), state}
   end
 
   def handle_call({:async_get_10_last_msgs}, _from, state) do

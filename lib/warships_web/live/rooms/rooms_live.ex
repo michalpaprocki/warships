@@ -1,5 +1,5 @@
 defmodule WarshipsWeb.Rooms.RoomsLive do
-  alias Warships.RoomsLiveMonitor
+  alias Warships.LiveMonitor
   alias WarshipsWeb.Game.PrepBoard.PrepBoard
   alias Warships.GameStore
   alias Warships.ChatStore
@@ -38,13 +38,13 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                 {:rejoin} ->
 
 
-                  RoomsLiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
+                  LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
                   last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
                   lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                   new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
                   new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
                   game = GameStore.get_store(extract_room_name(room))
-                  RoomsLiveMonitor.clean_up_after_rejoin()
+
                   {:ok,
                   socket
                   |> assign(%{
@@ -55,7 +55,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                     :game => game
                   })}
                 _ ->
-                  RoomsLiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
+                  LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
                   last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
                   lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                   new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
@@ -86,13 +86,13 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
               {:rejoin} ->
 
-                RoomsLiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
+                LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
                 last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
                 lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                 new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
                 new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
                 game = GameStore.get_store(extract_room_name(room))
-                RoomsLiveMonitor.clean_up_after_rejoin()
+
                 {:ok,
                 socket
                 |> assign(%{
@@ -103,7 +103,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                   :game => game
                 })}
               _ ->
-                RoomsLiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
+                LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
                 last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
                 lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                 new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
@@ -182,7 +182,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
         new_joined_rooms =
           Map.replace(socket.assigns.joined_rooms, String.to_atom(msg.payload.target), new_map_)
-
+          ChatStore.save_last_msg(:CS_lobby, new_msg)
         {:noreply, socket |> assign(:joined_rooms, new_joined_rooms)}
 
 

@@ -205,6 +205,7 @@ defmodule Warships.GameStore do
     case shot do
       {:miss, coords} ->
         shots_fired_ = [coords | Map.get(data, :shots_coords)]
+
         new_data_ = Map.replace(data, :shots_coords, shots_fired_)
         new_players_data_ = Map.replace(state.players, String.to_atom(params.shooter), new_data_)
         next_turn = Map.replace(state, :turn, target)

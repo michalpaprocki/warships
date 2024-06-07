@@ -3,7 +3,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
   alias Warships.ShipStore
   use Phoenix.LiveComponent
   def update(assigns, socket) do
-
+    IO.inspect(assigns)
     case assigns do
       %{:update => state, :id=> _} ->
 

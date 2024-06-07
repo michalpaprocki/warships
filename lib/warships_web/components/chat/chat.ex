@@ -2,6 +2,7 @@ defmodule WarshipsWeb.Chat.Chat do
   use Phoenix.LiveComponent
 
   def update(assigns, socket) do
+
     {:ok,
      socket
      |> assign(assigns)
