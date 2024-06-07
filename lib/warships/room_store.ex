@@ -109,7 +109,7 @@ alias Warships.GameStore
 
     case length(room) do
       0 -> {:reply, {:error, "Room not found"}, state}
-      _ -> {:reply, room, state}
+      _ -> {:reply, List.first(room), state}
     end
   end
 

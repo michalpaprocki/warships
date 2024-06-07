@@ -69,7 +69,7 @@ Module responsible for monitoring WarshipsWeb.Rooms.RoomsLive socket shutdowns a
   end
 
   def handle_info({:DOWN, _ref, :process, pid, reason}, state) do
-IO.inspect(reason)
+
 
     case reason do
       {:shutdown, :left} ->

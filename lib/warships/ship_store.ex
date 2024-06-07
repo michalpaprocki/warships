@@ -64,7 +64,7 @@ store_name: "name"
 
     cond do
       length(Enum.to_list(state.players)) < 2 ->
-        players = Map.put(state.players, String.to_atom(params.name) ,%{:map_of_ships=>%{:m1=>%{:ships=>%{},:max=>4, :max_hits => 1},:m2=>%{:ships=>%{},:max=>3, :max_hits => 2},:m3=>%{:ships=>%{},:max=>2, :max_hits => 3},:m4=>%{:ships=>%{},:max=>1, :max_hits => 4}}})
+        players = Map.put(state.players, params.name ,%{:map_of_ships=>%{:m1=>%{:ships=>%{},:max=>4, :max_hits => 1},:m2=>%{:ships=>%{},:max=>3, :max_hits => 2},:m3=>%{:ships=>%{},:max=>2, :max_hits => 3},:m4=>%{:ships=>%{},:max=>1, :max_hits => 4}}})
         new_state = Map.replace(state,:players,  players)
 
         {:reply, "#{params.name} added as player" , new_state}
@@ -75,7 +75,7 @@ store_name: "name"
   end
 
   def handle_call({:remove_player, params}, _from, state) do
-      players = Map.delete(state.players, String.to_atom(params.name))
+      players = Map.delete(state.players, params.name)
       new_state = Map.replace(state, :players, players)
 
       {:reply, "#{params.name} removed as player" , new_state}
@@ -86,7 +86,7 @@ store_name: "name"
     case check_if_class_in_range?(params.class) do
       false-> {:reply, "Class not viable" , state}
       true ->
-        player_data = Map.get(state.players, String.to_atom(params.player))
+        player_data = Map.get(state.players, params.player)
 
         ship_class_map = Map.get(player_data.map_of_ships, String.to_atom(params.class))
         sid = assign_sid_on_class_len(ship_class_map.ships, params.class)
@@ -101,9 +101,9 @@ store_name: "name"
               ship_class_map_updated = Map.put(player_data.map_of_ships, String.to_atom(params.class), ship_class_updated)
 
               player_data_updated = Map.replace(player_data, :map_of_ships, ship_class_map_updated)
-              new_players_data = Map.replace(state.players, String.to_atom(params.player), player_data_updated)
+              new_players_data = Map.replace(state.players, params.player, player_data_updated)
               new_state = Map.replace(state, :players, new_players_data)
-              WarshipsWeb.Endpoint.broadcast("game", "ship_added",  %{:player => params.player , :state =>Map.get(new_state.players, String.to_atom(params.player), [])})
+              WarshipsWeb.Endpoint.broadcast("game", "ship_added",  %{:player => params.player , :state =>Map.get(new_state.players, params.player, [])})
             #### decide how to save coords || {[x,y], }
             {:reply, {sid, params.ship}, new_state}
         end
@@ -115,22 +115,22 @@ store_name: "name"
     case check_if_class_in_range?(params.class) do
       false-> {:reply, "Class not viable" , state}
       true ->
-        player_data = Map.get(state.players, String.to_atom(params.player))
-        ship_class_map = Map.get(player_data.map_of_ships, String.to_atom(params.class))
-        new_ship_map = Map.delete(ship_class_map.ships, String.to_atom(params.sid))
+        player_data = Map.get(state.players, params.player)
+        ship_class_map = Map.get(player_data.map_of_ships, String.to_existing_atom(params.class))
+        new_ship_map = Map.delete(ship_class_map.ships, params.sid)
         m1shipsupdated = Map.replace(ship_class_map, :ships, new_ship_map)
-        new_class_map = Map.replace(player_data.map_of_ships, String.to_atom(params.class), m1shipsupdated)
+        new_class_map = Map.replace(player_data.map_of_ships, String.to_existing_atom(params.class), m1shipsupdated)
         new_player_data = Map.replace(player_data, :map_of_ships, new_class_map)
-        players_updated = Map.replace(state.players, String.to_atom(params.player), new_player_data)
+        players_updated = Map.replace(state.players, params.player, new_player_data)
         new_state = Map.replace(state, :players, players_updated)
-        WarshipsWeb.Endpoint.broadcast("game", "ship_removed",  %{:player => params.player , :state =>Map.get(new_state.players, String.to_atom(params.player), [])})
-        {:reply, {String.to_atom(params.class),String.to_atom(params.sid)}, new_state}
+        WarshipsWeb.Endpoint.broadcast("game", "ship_removed",  %{:player => params.player , :state =>Map.get(new_state.players, params.player, [])})
+        {:reply, {String.to_existing_atom(params.class), params.sid}, new_state}
     end
   end
   def handle_call({:get_player_ships, params}, _from, state) do
 
 
-    player_ships = Map.get(state.players, String.to_atom(params.player))
+    player_ships = Map.get(state.players, params.player)
 
     {:reply, player_ships.map_of_ships, state}
 
@@ -141,7 +141,7 @@ store_name: "name"
 
   def handle_call({:check_if_ship_hit, params}, _from, state) do
 
-     player_data = Map.get(state.players, String.to_atom(params.target_player))
+    player_data = Map.get(state.players, params.target_player)
     resp = List.flatten(Enum.map(player_data.map_of_ships, fn {_k,v} -> Enum.filter(v.ships, fn x ->Enum.member?( elem(x, 1).coords, params.coords) end) end))
 
 
@@ -151,7 +151,7 @@ store_name: "name"
       _->
 
         id= elem(Enum.at(resp, 0), 0)
-        class = String.slice(Atom.to_string(id), 0,2)
+        class = String.slice(id, 0,2)
         class_map = Map.get(player_data.map_of_ships, String.to_atom(class))
         ship = Map.get(class_map.ships, id)
 
@@ -169,7 +169,7 @@ store_name: "name"
             class_map_u = Map.replace(class_map, :ships, ship_u)
 
             player_data_u = Map.replace(player_data.map_of_ships, String.to_atom(class), class_map_u)
-            players_u = Map.replace(state.players, String.to_atom(params.target_player), %{:map_of_ships=> player_data_u})
+            players_u = Map.replace(state.players, params.target_player, %{:map_of_ships=> player_data_u})
             new_state = Map.replace(state, :players, players_u)
             {:reply, {:hit, id, params.coords}, new_state}
         end
@@ -194,24 +194,24 @@ store_name: "name"
   defp assign_sid_on_class_len(map, ship_class) do
 
     case Enum.count(map) do
-      0 ->   String.to_atom(ship_class<>"_"<> Integer.to_string(:os.system_time()))
+      0 ->   ship_class<>"_"<> Integer.to_string(:os.system_time())
       1 ->
         if ship_class == "m4" do
           {:error, :class_full}
           else
-             String.to_atom(ship_class<>"_"<> Integer.to_string(:os.system_time()))
+             ship_class<>"_"<> Integer.to_string(:os.system_time())
           end
       2 ->
         if ship_class == "m3" || ship_class == "m4"  do
         {:error, :class_full}
         else
-           String.to_atom(ship_class<>"_"<> Integer.to_string(:os.system_time()))
+           ship_class<>"_"<> Integer.to_string(:os.system_time())
         end
       3 ->
         if ship_class =="m2" || ship_class == "m3" || ship_class == "m4" do
           {:error, :class_full}
         else
-           String.to_atom(ship_class<>"_"<> Integer.to_string(:os.system_time()))
+           ship_class<>"_"<> Integer.to_string(:os.system_time())
         end
 
       4 -> {:error, :class_full}

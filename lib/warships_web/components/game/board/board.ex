@@ -11,7 +11,7 @@ defmodule WarshipsWeb.Game.Board.Board do
   end
   def handle_event("give_turn", _unsigned_params, socket) do
     nickname =
-      Map.filter(socket.assigns.game.players, fn p -> elem(p, 0) == String.to_atom(socket.assigns.nickname) end)
+      Map.filter(socket.assigns.game.players, fn p -> elem(p, 0) == socket.assigns.nickname end)
 
     GameStore.change_game_state(socket.assigns.game.game, List.first(Map.keys(nickname)))
     {:noreply, socket}
@@ -21,7 +21,7 @@ defmodule WarshipsWeb.Game.Board.Board do
 
 
    cond do
-    String.to_atom(socket.assigns.nickname) == socket.assigns.game.turn ->
+    socket.assigns.nickname == socket.assigns.game.turn ->
       GameStore.shoot(socket.assigns.game.game, socket.assigns.nickname, {x,y})
 
       {:noreply, socket}

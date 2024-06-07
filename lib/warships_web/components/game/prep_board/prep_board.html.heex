@@ -1,4 +1,4 @@
-<div class="bg-blue-500 flex lg:flex-row flex-col  gap-2 shadow-md shadow-black rounded-sm">
+<div class="bg-blue-300 flex lg:flex-row flex-col  gap-2 shadow-md shadow-black rounded-sm">
     
     
 
@@ -31,7 +31,7 @@
                 <% end %>
             <div class="p-4 ">
                 <%= cond do %>
-                    <% elem(Enum.at(Enum.filter(@game.players, fn {k,_v} -> k == String.to_atom(@nickname) end), 0), 1).ready -> %>
+                    <% elem(Enum.at(Enum.filter(@game.players, fn {k,_v} -> k == @nickname end), 0), 1).ready -> %>
                         <button phx-click="toggle_ready" phx-target={@myself} class="bg-black text-white bg-stripes bg-1x1 hover:text-white hover:ring-2 hover:ring-black hover:scale-105 transition p-2 rounded-sm  uppercase font-semibold">cancel</button>
 
                     <% length(Map.to_list(@ships_on_board.m1.ships)) == @ships_on_board.m1.max && length(Map.to_list(@ships_on_board.m2.ships)) == @ships_on_board.m2.max && length(Map.to_list(@ships_on_board.m3.ships)) == @ships_on_board.m3.max && length(Map.to_list(@ships_on_board.m4.ships)) == @ships_on_board.m4.max  -> %>
@@ -47,7 +47,7 @@
         </div>
         <div class="font-semibold capitalize p-1 px-4 flex flex-col gap-5">
             Opponent is :
-            <%= if elem(Enum.at(Enum.filter(@game.players, fn {k,_v} -> k != String.to_atom(@nickname) end), 0), 1).ready do  %>
+            <%= if elem(Enum.at(Enum.filter(@game.players, fn {k,_v} -> k != @nickname end), 0), 1).ready do  %>
             <div class="font-semibold capitalize animate-pulse bg-white text-black p-4 text-center align-middle">Ready</div>
             <% else %>
             <div class="font-semibold capitalize p-4 text-center align-middle animate-none">Not Ready</div>

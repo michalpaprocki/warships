@@ -28,6 +28,7 @@ defmodule WarshipsWeb.Home.HomeLive do
         lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
         new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
         new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
+
         LiveMonitor.monitor(self(), __MODULE__, "home", socket.assigns.nickname)
         {:ok,
          socket
@@ -118,6 +119,7 @@ defmodule WarshipsWeb.Home.HomeLive do
   def handle_info(msg, socket) do
     case msg.event do
       "update_users" ->
+
         target_map_ = Map.get(socket.assigns.joined_rooms, String.to_atom(msg.payload.target))
 
         new_users_ =

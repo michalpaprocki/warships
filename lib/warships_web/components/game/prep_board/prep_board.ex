@@ -3,7 +3,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
   alias Warships.ShipStore
   use Phoenix.LiveComponent
   def update(assigns, socket) do
-    IO.inspect(assigns)
+
     case assigns do
       %{:update => state, :id=> _} ->
 
@@ -166,7 +166,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
   end
 
   def handle_event("cancel_placement", %{"x" => x , "y" => y, "class" => class}, socket) do
-    player_data = Map.get(socket.assigns.game.players, String.to_atom(socket.assigns.nickname))
+    player_data = Map.get(socket.assigns.game.players, socket.assigns.nickname)
 
     case player_data.ready do
 
@@ -178,21 +178,21 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
           "m1" ->
 
               sid = get_sid(socket.assigns.ships_on_board.m1, {x,y})
-              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, Atom.to_string(sid))
+              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, sid)
             {:noreply, socket}
           "m2" ->
 
               sid = get_sid(socket.assigns.ships_on_board.m2, {x,y})
-              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, Atom.to_string(sid))
+              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, sid)
             {:noreply, socket}
           "m3" ->
 
               sid = get_sid(socket.assigns.ships_on_board.m3, {x,y})
-              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, Atom.to_string(sid))
+              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, sid)
             {:noreply, socket}
           "m4" ->
               sid = get_sid(socket.assigns.ships_on_board.m4, {x,y})
-              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, Atom.to_string(sid))
+              ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, sid)
             {:noreply, socket}
               _->
                 {:noreply, socket}
@@ -270,20 +270,4 @@ defp get_sid(map_of_class_ships ,coords) do
 end
 
 
-# obsolete since moved to broadcasts #
-
-# defp remove_ships(socket, map_of_class_ships ,coords, class) do
-#   ships = Enum.map(map_of_class_ships.ships, fn x -> x end )
-#   sid = elem(Enum.at(Enum.filter(ships, fn {_k,v} -> Enum.member?(v, coords) end ),0), 0)
-#   ShipStore.remove_ship(socket.assigns.game.game, socket.assigns.nickname, class, Atom.to_string(sid))
-#   new_m = Map.delete(map_of_class_ships.ships, sid)
-#   new_ships_map = Map.replace(map_of_class_ships, :ships, new_m)
-#   {sid, Map.replace(socket.assigns.ships_on_board, String.to_atom(class), new_ships_map)}
-# end
-
-# defp remove_adjacent_tiles(socket, class, sid) do
-#   adj_class_map = Map.get(socket.assigns.adjacent, String.to_atom(class))
-#   new_adj_class_map = Map.delete(adj_class_map, sid)
-#   Map.replace(socket.assigns.adjacent, String.to_atom(class), new_adj_class_map)
-# end
 end

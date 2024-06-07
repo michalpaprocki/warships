@@ -220,10 +220,10 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
   ############## priv ##############
   defp extract_room_name(room_tuple),
-    do: Enum.at(Tuple.to_list(List.first(room_tuple)), 0)
+    do: elem(room_tuple, 0)
 
   defp extract_room_password(room_tuple),
-    do: Enum.at(Tuple.to_list(List.first(room_tuple)), 1)
+    do: elem(room_tuple, 1)
 
   defp check_if_room_authed(nil, _room), do: false
 
@@ -236,7 +236,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
   end
 
   defp check_if_room_protected(room_tuple) do
-    if String.length(Enum.at(Tuple.to_list(List.first(room_tuple)), 1)) > 0 do
+    if String.length(elem(room_tuple, 1)) > 0 do
       true
     else
       false

@@ -18,7 +18,7 @@ defmodule Warships.GameStore do
     IO.puts("Starting  #{"GS_" <> init_arg}")
 
     RoomSupervisor.start_child(String.to_atom(init_arg), Warships.ShipStore, :start_link, [init_arg])
-    {:ok, %{:game => init_arg, :turn => :unset, :state => :awaiting_players, :winner => "", :players => %{}, :rematch =>%{:challenger=> :none, :request=> false}}}
+    {:ok, %{:game => init_arg, :turn => "unset", :state => :awaiting_players, :winner => "", :players => %{}, :rematch =>%{:challenger=> :none, :request=> false}}}
   end
 
   def change_game_state(server, state) do
@@ -77,7 +77,7 @@ defmodule Warships.GameStore do
 
   def handle_call({:add_player, params}, _from, state) do
     cond do
-      Map.has_key?(state.players, String.to_atom(params.name)) ->
+      Map.has_key?(state.players, params.name) ->
 
         {:reply, {:rejoin}, state}
 
@@ -92,7 +92,7 @@ defmodule Warships.GameStore do
 
           ShipStore.add_player(state.game, params.name)
           new_players_ =
-            Map.put(state.players, String.to_atom(params.name), %{
+            Map.put(state.players,params.name, %{
               :ships_hit => %{},
               :shots_coords => [],
               :ready => false
@@ -126,12 +126,12 @@ defmodule Warships.GameStore do
           ShipStore.remove_player(state.game, params.name)
           players = Enum.map(state.players, fn x-> elem(x,0) end)
           for p <- players do
-            ShipStore.remove_player(state.game, Atom.to_string(p))
-            if p != String.to_atom(params.name) do
-              ShipStore.add_player(state.game, Atom.to_string(p))
+            ShipStore.remove_player(state.game, p)
+            if p != params.name do
+              ShipStore.add_player(state.game, p)
             end
           end
-          new_players_ = Map.delete(state.players, String.to_atom(params.name))
+          new_players_ = Map.delete(state.players, params.name)
           cond do
             length(Map.to_list(new_players_)) == 0 ->
               new_state = state|> Map.replace(:players, new_players_)
@@ -140,7 +140,7 @@ defmodule Warships.GameStore do
               true ->
 
                 new_players_clean =
-                  Map.get(new_players_, Enum.at(Map.keys(new_players_), 0)) |> Map.replace(:ready, false) |> Map.replace(:ships_hit, %{}) |> Map.replace(:shots_coords, %{})
+                  Map.get(new_players_, Enum.at(Map.keys(new_players_), 0)) |> Map.replace(:ready, false) |> Map.replace(:ships_hit, %{}) |> Map.replace(:shots_coords, [])
                 new_players_u = Map.replace(new_players_,Enum.at(Map.keys(new_players_), 0), new_players_clean)
                 new_players = Map.put(state, :players, new_players_u)
                 rematch_u =
@@ -153,9 +153,9 @@ defmodule Warships.GameStore do
               end
     end
   def handle_call({:toggle_ready, params}, _from, state) do
-    player = Map.get(state.players, String.to_atom(params.player))
+    player = Map.get(state.players, params.player)
     new_player = Map.replace(player, :ready, !player.ready)
-    players_updated = Map.replace(state.players, String.to_atom(params.player),  new_player)
+    players_updated = Map.replace(state.players, params.player,  new_player)
     new_state = Map.replace(state, :players, players_updated)
 
     cond do
@@ -195,19 +195,22 @@ defmodule Warships.GameStore do
 
   def handle_call({:shoot, params}, _from, state) do
 
-    data = Map.get(state.players, String.to_atom(params.shooter))
-    target = elem(Enum.at(Enum.filter(state.players, fn {k,_v} -> k != String.to_atom(params.shooter) end), 0), 0)
+    data = Map.get(state.players, params.shooter)
+    target = elem(Enum.at(Enum.filter(state.players, fn {k,_v} -> k != params.shooter end), 0), 0)
 
 
-    shot = ShipStore.check_if_ship_hit(state.game, Atom.to_string(target), params.coords)
+    shot = ShipStore.check_if_ship_hit(state.game, target, params.coords)
 
     # # might a be good idea to check whether coords already exist in the list and keep shots fired/missed in ShipStore # #
     case shot do
       {:miss, coords} ->
+
+
         shots_fired_ = [coords | Map.get(data, :shots_coords)]
 
         new_data_ = Map.replace(data, :shots_coords, shots_fired_)
-        new_players_data_ = Map.replace(state.players, String.to_atom(params.shooter), new_data_)
+
+        new_players_data_ = Map.replace(state.players, params.shooter, new_data_)
         next_turn = Map.replace(state, :turn, target)
         new_state_ = Map.replace(next_turn, :players, new_players_data_)
         WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state_)
@@ -220,7 +223,7 @@ defmodule Warships.GameStore do
 
             new_hits = Map.put(data.ships_hit, id, {:hit, [coords]})
             new_data   = Map.replace(data, :ships_hit, new_hits)
-            new_players = Map.replace(state.players, String.to_atom(params.shooter), new_data)
+            new_players = Map.replace(state.players, params.shooter, new_data)
             next_turn = Map.replace(state, :turn, target)
             new_state = Map.replace(next_turn, :players, new_players)
             WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
@@ -232,7 +235,7 @@ defmodule Warships.GameStore do
             tuple_u  = {:hit, new_coords}
             ship_u = Map.replace(data.ships_hit, id, tuple_u)
             new_ships_hit = Map.replace(data, :ships_hit, ship_u)
-            new_players = Map.replace(state.players, String.to_atom(params.shooter), new_ships_hit)
+            new_players = Map.replace(state.players, params.shooter, new_ships_hit)
             next_turn = Map.replace(state, :turn, target)
             new_state = Map.replace(next_turn, :players, new_players)
             WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
@@ -246,7 +249,7 @@ defmodule Warships.GameStore do
             [] ->
               new_map = Map.put(data.ships_hit, id, {:sunk, [coords]})
               ships_hit_u = Map.replace(data, :ships_hit, new_map)
-              new_players = Map.replace(state.players, String.to_atom(params.shooter), ships_hit_u)
+              new_players = Map.replace(state.players, params.shooter, ships_hit_u)
               next_turn = Map.replace(state, :turn, target)
 
               ships_sunken? = check_if_all_ships_sunken?(ships_hit_u.ships_hit, 10)
@@ -269,7 +272,7 @@ defmodule Warships.GameStore do
               tuple_u  = {:sunk, new_coords}
               ship_u = Map.replace(data.ships_hit, id, tuple_u)
               new_ships_hit = Map.replace(data, :ships_hit, ship_u)
-              new_players = Map.replace(state.players, String.to_atom(params.shooter), new_ships_hit)
+              new_players = Map.replace(state.players, params.shooter, new_ships_hit)
               next_turn = Map.replace(state, :turn, target)
 
               ships_sunken? = check_if_all_ships_sunken?(ship_u, 10)
@@ -306,8 +309,8 @@ defmodule Warships.GameStore do
   def handle_call({:accept_rematch}, _from, state) do
     players = Enum.map(state.players, fn x-> elem(x,0) end)
     for p <- players do
-      ShipStore.remove_player(state.game, Atom.to_string(p))
-      ShipStore.add_player(state.game, Atom.to_string(p))
+      ShipStore.remove_player(state.game, p)
+      ShipStore.add_player(state.game, p)
     end
 
     players_list = Enum.map(players, fn x -> Map.put(%{}, x, %{
