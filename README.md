@@ -28,3 +28,8 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 - improve UI feedback
 - design a system that will prevent users from opening more than 1 tab; current app implementation removes player from game on any tab navigation
+
+
+#### Issues
+
+- mysterious space between header and main tags in app layout
