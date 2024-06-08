@@ -1,5 +1,20 @@
 # Warships
 
+My spin on the Battleships game.
+
+## Objectives
+
+- build a web app that allows user to create and partake in a 2 player matches
+- implement a simple real-time chat
+- gain basic familiarity with Elixir and some of it's modules
+
+## Technologies
+
+- Phoenix Framework ver 1.7
+- TailwindCSS
+
+## Running app locally
+
 To start your Phoenix server:
 
 - Run `mix setup` to install and setup dependencies
@@ -7,6 +22,9 @@ To start your Phoenix server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-## Possible improvements :
 
-- Liveview assign for chat component (users list) is created/updated in channel file on user join and on terminate. Closing a browser tab while running more than 1, will lead to username deletion in socket assings.
+
+### Possible improvements :
+
+- improve UI feedback
+- design a system that will prevent users from opening more than 1 tab; current app implementation removes player from game on any tab navigation
