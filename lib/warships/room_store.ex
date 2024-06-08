@@ -47,7 +47,9 @@ alias Warships.GameStore
   def get_all_rooms() do
     GenServer.call(@name, {:all})
   end
-
+  def room_protected?(name) do
+    GenServer.call(@name, {:protected, %{:name=> name}})
+  end
   @doc """
    Inserts a room to ETS :rooms table.
 
@@ -94,7 +96,7 @@ alias Warships.GameStore
 
     case room do
       true ->
-        resp = Warships.GameStore.start_link(params.name)
+        Warships.GameStore.start_link(params.name)
 
         WarshipsWeb.Endpoint.broadcast("rooms", "room_created", %{:room => params.name})
         {:reply, {:ok}, state}
@@ -110,6 +112,22 @@ alias Warships.GameStore
     case length(room) do
       0 -> {:reply, {:error, "Room not found"}, state}
       _ -> {:reply, List.first(room), state}
+    end
+  end
+  def handle_call({:protected, params}, _from, state) do
+    room = :ets.match_object(:rooms, {params.name, :"$1"})
+
+    case length(room) do
+      0 -> {:reply, {:error, "Room not found"}, state}
+      _ ->
+        cond do
+          String.length(elem(List.first(room),1 )) == 0 ->
+            {:reply, false, state}
+          true ->
+            {:reply, true, state}
+
+        end
+
     end
   end
 

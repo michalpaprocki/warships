@@ -41,6 +41,7 @@ defmodule WarshipsWeb.Home.HomeLive do
          |> assign(:nickname, nickname)
          |> assign(:page_title, "Home")
          |> assign(:show_full, true)
+         |> assign(:show_protected, true)
          |> assign(:room_form, to_form(%{}, as: :room_form))}
     end
   end
@@ -105,6 +106,9 @@ defmodule WarshipsWeb.Home.HomeLive do
   end
   def handle_event("toggle_show_full", _unsigned_params, socket) do
     {:noreply, socket |> assign(:show_full, !socket.assigns.show_full)}
+  end
+  def handle_event("toggle_show_protected", _unsigned_params, socket) do
+    {:noreply, socket |> assign(:show_protected, !socket.assigns.show_protected)}
   end
 
   def handle_event("sort", %{"sort"=> order, "value" => ""}, socket) do
@@ -197,6 +201,6 @@ defmodule WarshipsWeb.Home.HomeLive do
     running_rooms_ = RoomSupervisor.get_running_games()
     rooms = Enum.map(running_rooms_, fn x-> Atom.to_string(elem(x,0)) end)
 
-    Enum.sort(Enum.map(rooms, fn x -> %{:room=> x, :players => GameStore.get_player_count(x)} end))
+    Enum.sort(Enum.map(rooms, fn x -> %{:room=> x, :players => GameStore.get_player_count(x), :protected? => RoomStore.room_protected?(x)} end))
   end
 end

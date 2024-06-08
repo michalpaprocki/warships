@@ -7,6 +7,7 @@
 
 :root {
     --headerH: 5rem;
+    --footerH: 2.5rem;
     --stripes_color: rgb(104, 104, 104);
     --glow_color: rgb(45, 168, 61);
     --glowAccented_color: rgba(255, 255, 255);
