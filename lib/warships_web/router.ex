@@ -33,6 +33,7 @@ defmodule WarshipsWeb.Router do
 
     get "/nickname/:nickname", PageController, :grab_name
     get "/auth/:room_name", PageController, :auth_room_access
+    get "/logout", PageController, :logout
   end
 
   # Other scopes may use custom stacks.

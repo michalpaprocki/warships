@@ -144,6 +144,16 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
     {:noreply, socket }
   end
+  def handle_event("toggle_header_menu", _unsigned_params, socket) do
+    {:noreply, socket|> assign(:header_menu, !socket.assigns.header_menu)}
+  end
+  def handle_event("close_header_menu", _unsigned_params, socket) do
+    {:noreply, socket|> assign(:header_menu, false)}
+  end
+  def handle_event("logout", _unsigned_params, socket) do
+    ChatStore.remove_chat_member(:CS_lobby, socket.assigns.nickname)
+    {:noreply, socket |> assign(:nickname, nil) |>redirect(to: ~p"/logout")}
+  end
   def handle_info({:update_flash, {flash_type, msg}}, socket) do
 
     {:noreply, socket |> put_flash(flash_type, msg)}

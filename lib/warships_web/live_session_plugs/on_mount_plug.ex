@@ -16,6 +16,7 @@ defmodule WarshipsWeb.LiveSessionPlugs.OnMountPlug do
              :messages => []
              }} end)
        |> assign_new(:nickname, fn -> nickname end)
+       |> assign_new(:header_menu, fn -> false end)
        |> assign_new(:user_token, fn -> token end)}
     else
       {:cont, socket}

@@ -6,9 +6,12 @@
  
     <.link class="uppercase font-semibold p-2 bg-black text-white text-xl hover:bg-white hover:text-black hover:ring-2 hover:ring-black hover:scale-105 transition rounded-sm " navigate={~p"/"}>Warships</.link>
   
-  <div class="flex gap-2 text-white">
-    <span class="p-4">options</span>
-    <span class="p-4"><%= @nickname %></span>
+  <div class="relative">
+    <.button class={"z-10 relative min-w-[10ch] transition #{if @header_menu == true, do: "rounded-top-md", else: "" }"} phx-click-away="close_header_menu" phx-click="toggle_header_menu"><%= @nickname %></.button>
+  
+    <div class={"absolute transition-all rounded-bottom-md  overflow-hidden -translate-y-2 w-full bg-zinc-900 z-0 #{if @header_menu == true, do: "h-12 pt-2", else: "h-0 p-0"}"}>
+      <.button phx-click="logout" class="rounded-none w-full">logout</.button>
+    </div>
   </div>
 </header>
 <main class="min-h-screen-header">

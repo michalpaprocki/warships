@@ -34,7 +34,9 @@ defmodule WarshipsWeb.PageController do
         |> assign(:nickname, nickname)
     end
   end
-
+  def logout(conn, _params) do
+    conn |> delete_session(:nickname) |> redirect(to: ~p"/nickname")
+  end
   defp set_authed_room(conn) do
     map = %{conn.params["room_name"] => conn.query_params["pwd"]}
     put_session(conn, :authed_rooms, map)

@@ -61,7 +61,16 @@ defmodule WarshipsWeb.Home.HomeLive do
       {:noreply, assign(socket, :require_password, false)}
     end
   end
-
+  def handle_event("toggle_header_menu", _unsigned_params, socket) do
+    {:noreply, socket|> assign(:header_menu, !socket.assigns.header_menu)}
+  end
+  def handle_event("close_header_menu", _unsigned_params, socket) do
+    {:noreply, socket|> assign(:header_menu, false)}
+  end
+  def handle_event("logout", _unsigned_params, socket) do
+    ChatStore.remove_chat_member(:CS_lobby, socket.assigns.nickname)
+    {:noreply, socket |> assign(:nickname, nil) |>redirect(to: ~p"/logout")}
+  end
   def handle_event("validate", %{"room_form" => params}, socket) do
     types = %{room_name: :string, room_password: :string}
 

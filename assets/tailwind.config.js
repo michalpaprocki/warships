@@ -13,7 +13,10 @@ module.exports = {
   ],
   theme: {
     extend: {
-      
+      borderRadius:{
+        "bottom-md": "0px 0px 8px 8px",
+        "top-md": "8px 8px 0px 0px "
+      },
       boxShadow: {
         "glow": "0rem 0rem 1rem var(--glow_color)",
         "glow_accented": "0rem 0rem 3rem 6px var(--glowAccented_color)",
