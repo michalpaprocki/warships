@@ -6,6 +6,7 @@ My spin on the Battleships game.
 
 - build a web app that allows user to create and partake in a 2 player matches
 - implement a simple real-time chat
+- create a system that terminates empty game rooms due to inactivity
 - gain basic familiarity with Elixir and some of it's modules
 
 ## Technologies
@@ -32,4 +33,3 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 #### Issues
 
-- mysterious space between header and main tags in app layout
