@@ -208,8 +208,8 @@ defmodule WarshipsWeb.Home.HomeLive do
   defp get_rooms_data() do
 
     running_rooms_ = RoomSupervisor.get_running_games()
-    rooms = Enum.map(running_rooms_, fn x-> Atom.to_string(elem(x,0)) end)
+    rooms = Enum.map(Enum.filter(running_rooms_, fn x-> hd(elem(x, 3)) == Warships.GameStore end), fn y -> elem(y, 0) end )
 
-    Enum.sort(Enum.map(rooms, fn x -> %{:room=> x, :players => GameStore.get_player_count(x), :protected? => RoomStore.room_protected?(x)} end))
+    Enum.sort(Enum.map(rooms, fn x -> %{:room=> String.slice(Atom.to_string(x), 3,String.length(Atom.to_string(x))), :players => GameStore.get_player_count(String.slice(Atom.to_string(x), 3,String.length(Atom.to_string(x)))), :protected? => RoomStore.room_protected?(String.slice(Atom.to_string(x), 3,String.length(Atom.to_string(x))))} end))
   end
 end

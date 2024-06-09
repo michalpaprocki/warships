@@ -2,7 +2,7 @@
   <div class="flex justify-between flex-grow-[1] gap-1">
     <div
       id="chat-messages"
-      class="p-1 text-sm bg-white w-full overflow-y-auto h-[80vh] message-container flex flex-col-reverse"
+      class="p-1 text-sm bg-white w-full overflow-y-auto h-[75vh] message-container flex flex-col-reverse"
     >
       <%= for m <- @messages do %>
       <div>
@@ -13,7 +13,7 @@
     </div>
     <div
       id="presence_list"
-      class="p-1 w-[15ch] text-sm bg-white h-[80vh] flex flex-col"
+      class="p-1 w-[15ch] text-sm bg-white h-[75vh] flex flex-col"
     >
       <%= for u <- @users do %>
       <span class="text-ellipsis overflow-x-hidden"><%= u %></span>

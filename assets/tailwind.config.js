@@ -178,8 +178,8 @@ module.exports = {
       },
       minHeight: {
         "screen-header": [
-          "calc(100vh - var(--headerH) - var(--footerH))",
-          "calc(100dvh - var(--headerH) - var(--footerH))",
+          "calc(100vh - calc(var(--headerH) + var(--footerH)))",
+          "calc(100dvh - calc(var(--headerH) + var(--footerH)))",
         ],
       },
       colors: {

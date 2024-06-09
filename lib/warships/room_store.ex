@@ -2,7 +2,7 @@ defmodule Warships.RoomStore do
   @moduledoc """
   An ETS store for rooms
   """
-alias Warships.GameStore
+alias Warships.RoomSupervisor
 
   use GenServer
 
@@ -96,8 +96,8 @@ alias Warships.GameStore
 
     case room do
       true ->
-        Warships.GameStore.start_link(params.name)
-
+        RoomSupervisor.start_child(String.to_atom("GS_"<>params.name), Warships.GameStore, :start_link, [params.name])
+        RoomSupervisor.start_child(String.to_atom("SS_"<>params.name), Warships.ShipStore, :start_link, [params.name])
         WarshipsWeb.Endpoint.broadcast("rooms", "room_created", %{:room => params.name})
         {:reply, {:ok}, state}
 
@@ -139,13 +139,14 @@ alias Warships.GameStore
 
   def handle_call({:delete_table, params}, _from, state) do
     :ets.delete(String.to_atom(params.name))
-    GameStore.stop_link(params.name)
+    Warships.GameStore.stop_link(params.name)
     {:reply, "Table #{params.name} deleted", state}
   end
 
   def handle_call({:delete, params}, _from, state) do
     :ets.delete(:rooms, params.name)
-
+    RoomSupervisor.delete_child("SS_"<>params.name)
+    RoomSupervisor.delete_child("GS_"<>params.name)
     WarshipsWeb.Endpoint.broadcast("rooms", "room_deleted", %{:room => params.name})
     {:reply, "Room #{params.name} deleted", state}
   end

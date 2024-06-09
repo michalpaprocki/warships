@@ -7,6 +7,7 @@ store_name: "name"
 """
 
   def start_link(store_name) do
+
     GenServer.start_link(__MODULE__, store_name, name: String.to_atom("SS_" <> store_name))
   end
 

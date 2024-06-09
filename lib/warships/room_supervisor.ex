@@ -7,7 +7,7 @@ defmodule Warships.RoomSupervisor do
   end
 
   def init(_) do
-
+    :ets.new(:refs, [:public, :named_table, :set])
     children = [
       {DynamicSupervisor, name: __MODULE__}
     ]
@@ -26,7 +26,7 @@ defmodule Warships.RoomSupervisor do
     Supervisor.which_children(:room_supervisor)
   end
   def get_running_games() do
-    Enum.filter(Supervisor.which_children(:room_supervisor), fn c -> elem(c,2) == :worker end)
+    Enum.filter(Supervisor.which_children(:room_supervisor), fn c -> elem(c,2) == :worker && elem(c,1) != :undefined end)
   end
   @doc """
   id: :atom

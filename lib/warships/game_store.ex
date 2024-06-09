@@ -1,10 +1,10 @@
 defmodule Warships.GameStore do
   alias Warships.RoomStore
   alias Warships.ShipStore
-  alias Warships.RoomSupervisor
   use GenServer
 
   def start_link(name) do
+
    GenServer.start_link(__MODULE__, name, name: String.to_atom("GS_" <> name))
 
   end
@@ -17,7 +17,7 @@ defmodule Warships.GameStore do
   def init(init_arg) do
     IO.puts("Starting  #{"GS_" <> init_arg}")
 
-    RoomSupervisor.start_child(String.to_atom(init_arg), Warships.ShipStore, :start_link, [init_arg])
+    # RoomSupervisor.start_child(String.to_atom(init_arg), Warships.ShipStore, :start_link, [init_arg])
     {:ok, %{:game => init_arg, :turn => "unset", :state => :awaiting_players, :winner => "", :players => %{}, :rematch =>%{:challenger=> :none, :request=> false}}}
   end
 
@@ -114,6 +114,8 @@ defmodule Warships.GameStore do
             {:reply, :ok, updated_with_turn_state}
           else
 
+            halt_termination_process(self())
+
             WarshipsWeb.Endpoint.broadcast("player_changes", "player_added", %{:room=> state.game, :player_count => length(Map.to_list(new_state_.players))})
             {:reply, :ok, new_state_}
           end
@@ -122,35 +124,39 @@ defmodule Warships.GameStore do
   end
 
   def handle_call({:remove_player, params}, _from, state) do
+    players = Enum.map(state.players, fn x-> elem(x,0) end)
 
-          ShipStore.remove_player(state.game, params.name)
-          players = Enum.map(state.players, fn x-> elem(x,0) end)
-          for p <- players do
-            ShipStore.remove_player(state.game, p)
-            if p != params.name do
-              ShipStore.add_player(state.game, p)
-            end
-          end
-          new_players_ = Map.delete(state.players, params.name)
-          cond do
-            length(Map.to_list(new_players_)) == 0 ->
-              new_state = state|> Map.replace(:players, new_players_)
-              WarshipsWeb.Endpoint.broadcast("player_changes", "player_removed", %{:room=> state.game, :player_count => length(Map.to_list(new_state.players))})
-              {:reply, :OK, new_state}
-              true ->
+    for p <- players do
+      ShipStore.remove_player(state.game, p)
+      if p != params.name do
+        ShipStore.add_player(state.game, p)
+      end
+    end
 
-                new_players_clean =
-                  Map.get(new_players_, Enum.at(Map.keys(new_players_), 0)) |> Map.replace(:ready, false) |> Map.replace(:ships_hit, %{}) |> Map.replace(:shots_coords, [])
-                new_players_u = Map.replace(new_players_,Enum.at(Map.keys(new_players_), 0), new_players_clean)
-                new_players = Map.put(state, :players, new_players_u)
-                rematch_u =
-                  new_players.rematch |> Map.replace(:challenger, :noone) |> Map.replace(:request, false)
-                new_state = new_players|> Map.replace(:rematch, rematch_u )|> Map.replace(:state, :awaiting_players)
+    new_players_ = Map.delete(state.players, params.name)
 
-                WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
-                WarshipsWeb.Endpoint.broadcast("player_changes", "player_removed", %{:room=> state.game, :player_count => length(Map.to_list(new_state.players))})
-                {:reply, :OK, new_state}
-              end
+    cond do
+      length(Map.to_list(new_players_)) == 0 ->
+        new_state = state|> Map.replace(:players, new_players_)
+        WarshipsWeb.Endpoint.broadcast("player_changes", "player_removed", %{:room=> state.game, :player_count => length(Map.to_list(new_state.players))})
+
+        begin_termination_process(self())
+
+        {:reply, :OK, new_state}
+        true ->
+
+          new_players_clean =
+            Map.get(new_players_, Enum.at(Map.keys(new_players_), 0)) |> Map.replace(:ready, false) |> Map.replace(:ships_hit, %{}) |> Map.replace(:shots_coords, [])
+          new_players_u = Map.replace(new_players_,Enum.at(Map.keys(new_players_), 0), new_players_clean)
+          new_players = Map.put(state, :players, new_players_u)
+          rematch_u =
+            new_players.rematch |> Map.replace(:challenger, :noone) |> Map.replace(:request, false)
+          new_state = new_players |> Map.replace(:rematch, rematch_u )|> Map.replace(:state, :awaiting_players)
+
+          WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+          WarshipsWeb.Endpoint.broadcast("player_changes", "player_removed", %{:room=> state.game, :player_count => length(Map.to_list(new_state.players))})
+          {:reply, :OK, new_state}
+        end
     end
   def handle_call({:toggle_ready, params}, _from, state) do
     player = Map.get(state.players, params.player)
@@ -335,12 +341,21 @@ defmodule Warships.GameStore do
     IO.puts("""
       #{"GS_"<>state.game} and #{"SS_"<>state.game} terminating due to inactivity...
     """)
-    RoomSupervisor.delete_child(state.game)
-
     {:noreply, state}
   end
 
   defp check_if_all_ships_sunken?(map_of_hit_ships, amount_of_ships) do
     length(Enum.map(map_of_hit_ships, fn x -> x end)) == amount_of_ships  && !Enum.member?(Enum.map(map_of_hit_ships, fn x -> elem(elem(x,1),0) end), :hit)
+  end
+  defp begin_termination_process(pid) do
+    ref = Process.send_after(pid, :timeout, 10 * 60 * 1000)
+    :ets.insert(:refs, {pid, ref})
+  end
+  defp halt_termination_process(pid) do
+    ref = :ets.match(:refs, {pid, :"$1"})
+    case length(ref) do
+      0-> :ok
+      _-> Process.cancel_timer(hd(hd(ref)))
+    end
   end
 end
