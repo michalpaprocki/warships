@@ -1,5 +1,6 @@
 defmodule WarshipsWeb.Auth.AuthLive do
 
+  alias Warships.ChatStore
   alias Warships.RoomStore
   alias RoomStore
   use WarshipsWeb, :live_view
