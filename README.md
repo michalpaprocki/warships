@@ -1,6 +1,8 @@
+
+
 # Warships
 
-My spin on the Battleships game.
+My spin on the Battleships game. 🚢
 
 ## Objectives
 
@@ -24,12 +26,10 @@ To start your Phoenix server:
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 
-
 ### Possible improvements :
 
 - improve UI feedback
-- design a system that will prevent users from opening more than 1 tab; current app implementation removes player from game on any tab navigation
+- develop a mechanism responsible for flash message clean up
+- design a system that will prevent users from opening more than 1 tab; current app implementation removes the player from game and chat when closing one of concurrent app tabs
 
-
-#### Issues
 
