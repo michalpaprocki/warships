@@ -22,6 +22,14 @@ module.exports = {
         "glow_accented": "0rem 0rem 3rem 6px var(--glowAccented_color)",
       },
       keyframes: {
+        moveX : {
+          "0%": {
+            backgroundPosition: "100% 0%"
+          }, 
+          "100%" :{
+            backgroundPosition: "0% 0%"
+          }
+        },
         pendulumFromTop: {
           "0%, 100%": {
             transform: "translateY(-50%)",
@@ -171,6 +179,7 @@ module.exports = {
         traverse_x: "traverse_x 25s cubic-bezier(0.7, 1, .4, 0.4) infinite",
         move_right: "pos_right 1s 2s cubic-bezier(0.7, 1, .4, 0.4) forwards",
         move_reset: "pos_reset 1s 2s cubic-bezier(0.7, 1, .4, 0.4) forwards",
+        roll_right: "moveX 5s linear infinite"
       },  
       height: {
         header: "var(--headerH)",
@@ -190,16 +199,18 @@ module.exports = {
         "stripes": "linear-gradient(45deg, var(--stripes_color) 25%, transparent 25%, transparent 50%, var(--stripes_color) 50%, var(--stripes_color) 75%, transparent 75%, transparent 100%)",
         "net_miss": "linear-gradient(45deg, var(--miss_color) 25%, transparent 25%, transparent 50%,var(--miss_color) 50%, var(--miss_color) 75%, transparent 75%, transparent 100%), linear-gradient(-45deg, var(--miss_color) 25%, transparent 25%, transparent 50%,var(--miss_color) 50%, var(--miss_color) 75%, transparent 75%, transparent 100%)",
         "net_hit": "linear-gradient(45deg, var(--hit_color) 25%, transparent 25%, transparent 50%,var(--hit_color) 50%, var(--hit_color) 75%, transparent 75%, transparent 100%), linear-gradient(-45deg, var(--hit_color) 25%, transparent 25%, transparent 50%,var(--hit_color) 50%, var(--hit_color) 75%, transparent 75%, transparent 100%)",
-        "net_sunk": "linear-gradient(45deg, var(--sunk_color) 25%, transparent 25%, transparent 50%,var(--sunk_color) 50%, var(--sunk_color) 75%, transparent 75%, transparent 100%), linear-gradient(-45deg, var(--sunk_color) 25%, transparent 25%, transparent 50%,var(--sunk_color) 50%, var(--sunk_color) 75%, transparent 75%, transparent 100%)"
+        "net_sunk": "linear-gradient(45deg, var(--sunk_color) 25%, transparent 25%, transparent 50%,var(--sunk_color) 50%, var(--sunk_color) 75%, transparent 75%, transparent 100%), linear-gradient(-45deg, var(--sunk_color) 25%, transparent 25%, transparent 50%,var(--sunk_color) 50%, var(--sunk_color) 75%, transparent 75%, transparent 100%)",
+        "warships": "url('/images/warships.svg')",
+        "warships_sm": "url('/images/warships_sm.svg')"
     },
-    backgroundSize: {
-      "3x3": "3rem 3rem",
-      "2x2": "2rem 2rem",
-      "1x1": "1rem 1rem",
-      "0.75x0.75": "0.75rem 0.75rem",
-      "0.5x0.5": "0.5rem 0.5rem",
-      "0.25x0.25": "0.25rem 0.25rem",
-    },
+      backgroundSize: {
+        "3x3": "3rem 3rem",
+        "2x2": "2rem 2rem",
+        "1x1": "1rem 1rem",
+        "0.75x0.75": "0.75rem 0.75rem",
+        "0.5x0.5": "0.5rem 0.5rem",
+        "0.25x0.25": "0.25rem 0.25rem",
+      },
     },
   },
   plugins: [

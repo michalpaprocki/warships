@@ -52,7 +52,7 @@
     </div>
   </div>
   <%= if length(@rooms_data) > 0 do %>
-    <div class="w-[80%] grid ring-purple-500 ring-2 gap-1 p-2 shadow-black shadow-md">
+    <div class="w-[80%] grid ring-purple-500 ring-2 gap-1 p-2 shadow-black shadow-md bg-white">
       <%=  for f <- @rooms_data do %>
         <%= cond do %>
           <% @show_full == true && @show_protected == true -> %>

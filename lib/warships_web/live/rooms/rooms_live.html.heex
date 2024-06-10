@@ -16,11 +16,9 @@
 
       <.live_component module={WarshipsWeb.Game.PrepBoard.PrepBoard} id="prep_board" game={@game} nickname={@nickname}  />
     <% :game -> %>
-      <div class="relative">
-        <.live_component module={WarshipsWeb.Game.Board.Board} id="board" game={@game} nickname={@nickname} /> 
-      </div>
+     
+      <.live_component module={WarshipsWeb.Game.Board.Board} id="board" game={@game} nickname={@nickname} /> 
 
- 
     <% :game_over -> %>
 
       <span class="uppercase text-xl">Game over </span>
@@ -28,19 +26,19 @@
       <div class="flex flex-col gap-2 py-7 items-center">
 
       <%= cond do %>
-      <% @game.rematch.challenger == @nickname && @game.rematch.request -> %>
-        <span>Waiting for a response...</span>
-        <.live_component id="spinner" module={WarshipsWeb.Spinners.Spinner2} />
-        <.button class="uppercase" phx-click="leave">leave</.button>
-      <% @game.rematch.challenger != @nickname && @game.rematch.request -> %>
-        <.button class="uppercase" phx-click="accept_rematch">accept</.button>
-        <.button class="uppercase" phx-click="leave">leave</.button>
-      <% @game.winner == @nickname -> %>
-          <.button class="uppercase" phx-click="request_another">Request another game</.button>
+        <% @game.rematch.challenger == @nickname && @game.rematch.request -> %>
+          <span>Waiting for a response...</span>
+          <.live_component id="spinner" module={WarshipsWeb.Spinners.Spinner2} />
           <.button class="uppercase" phx-click="leave">leave</.button>
-      <% @game.winner != @nickname -> %>
-          <.button class="uppercase" phx-click="request_another">Request revenge game</.button>
+        <% @game.rematch.challenger != @nickname && @game.rematch.request -> %>
+          <.button class="uppercase" phx-click="accept_rematch">accept</.button>
           <.button class="uppercase" phx-click="leave">leave</.button>
+        <% @game.winner == @nickname -> %>
+            <.button class="uppercase" phx-click="request_another">Request another game</.button>
+            <.button class="uppercase" phx-click="leave">leave</.button>
+        <% @game.winner != @nickname -> %>
+            <.button class="uppercase" phx-click="request_another">Request revenge game</.button>
+            <.button class="uppercase" phx-click="leave">leave</.button>
       <% end %>
       
     </div>
