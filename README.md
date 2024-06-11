@@ -31,5 +31,5 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 - improve UI feedback
 - develop a mechanism responsible for flash message clean up
 - design a system that will prevent users from opening more than 1 tab; current app implementation removes the player from game and chat when closing one of concurrent app tabs
-
+- add favicon
 
