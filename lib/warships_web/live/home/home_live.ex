@@ -105,7 +105,7 @@ defmodule WarshipsWeb.Home.HomeLive do
       resp = RoomStore.insert_room(params["room_name"], params["room_password"])
 
       case resp do
-        {:ok} ->
+        :ok ->
           {:noreply, push_navigate(socket, to: ~p"/rooms/#{params["room_name"]}")}
 
         {:error, msg} ->

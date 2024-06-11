@@ -1,5 +1,7 @@
 defmodule Warships.RoomSupervisor do
-
+@moduledoc """
+  A dynamic supervisor module responsible for spawning and terminating `Warships.GameStore` and `Warships.ShipStore` processes from `Warships.RoomStore` module.
+"""
   use Supervisor
 
   def start_link(_) do
@@ -14,6 +16,8 @@ defmodule Warships.RoomSupervisor do
     Supervisor.init(children, strategy: :one_for_one)
   end
 @doc """
+Adds a processes to supervision.
+
  RoomSupervisor.start_child(:id, Warships.ShipStore, :start_link, ["test_room"])
 """
   def start_child(id, module, fun, args) do
@@ -29,7 +33,11 @@ defmodule Warships.RoomSupervisor do
     Enum.filter(Supervisor.which_children(:room_supervisor), fn c -> elem(c,2) == :worker && elem(c,1) != :undefined end)
   end
   @doc """
-  id: :atom
+  Terminates and deletes supervised processes.
+
+  ## Examples
+      RoomSupervisor.delete_child("process_id_name")
+
   """
   def delete_child(id) do
     Supervisor.terminate_child(:room_supervisor, String.to_atom(id))

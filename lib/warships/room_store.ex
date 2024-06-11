@@ -87,12 +87,13 @@ alias Warships.RoomSupervisor
       iex>insert_room("existing_name", "")
       {:error, "Could not create room, name taken"}
   """
-  def insert_room(name, password) when is_binary(name) and is_binary(password) do
+  def insert_room(name, password) when is_binary(name) and is_binary(password) or is_binary(name) and is_nil(password) do
     GenServer.call(
       @name,
       {:insert, %{:name => to_string(name), :password => to_string(password)}}
     )
   end
+
   def insert_room(_name, _password) do
     raise("Variables `name` and `password` have to be of type string")
   end
