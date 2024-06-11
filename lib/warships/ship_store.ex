@@ -1,9 +1,8 @@
 defmodule Warships.ShipStore do
+use GenServer
 
-
-  use GenServer
-@doc """
-store_name: "name"
+@moduledoc """
+A store for ships coords.
 """
 
   def start_link(store_name) do
@@ -18,11 +17,7 @@ store_name: "name"
   def init(init_arg) do
     IO.puts("Starting  #{"SS_" <> init_arg}")
 
-    {:ok, %{:game => init_arg, :players => %{
-
-       }
-      }
-    }
+    {:ok, %{:game => init_arg, :players => %{}}}
   end
   def add_player(server, name) do
     GenServer.call(String.to_atom("SS_"<>server), {:add_player, %{:name =>name}})

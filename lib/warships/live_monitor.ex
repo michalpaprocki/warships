@@ -5,8 +5,9 @@ defmodule Warships.LiveMonitor do
 
   @name __MODULE__
 
-@doc """
-Module responsible for monitoring WarshipsWeb.Rooms.RoomsLive socket shutdowns and deleting player from Warships.GameStore
+@moduledoc """
+Module responsible for monitoring `LiveView` socket shutdowns and deleting player from `Warships.GameStore` and `Warships.ChatStore`
+
 """
   def start_link(_) do
     GenServer.start_link(@name,[], name: @name)
@@ -15,23 +16,31 @@ Module responsible for monitoring WarshipsWeb.Rooms.RoomsLive socket shutdowns a
   def init(_) do
     {:ok, %{views: %{}}}
   end
-  def get_monitored() do
-    GenServer.call(@name, {:get_monitored})
+  @doc """
+  Adds a module to Process.monitor/1 and stores args for later retrieval.
+
+  ## Examples
+
+      iex>Warships.LiveMonitor.monitor(self(), Warships.GameStore, "generic_name", "my_man")
+      :ok
+
+      iex>Warships.LiveMonitor.monitor(self(), Warships.GameStore, :generic_name, :my_man)
+      ** (RuntimeError) Invalid arguments.
+
+      iex>Warships.LiveMonitor.monitor(self(), Warships.NonExistentModule, "generic_name", "my_man")
+      ** (RuntimeError) Module does not exist.
+
+  """
+
+  def monitor(pid, view_module, room_name, nickname) when is_pid(pid) and is_binary(room_name) and is_binary(nickname) do
+    case function_exported?(view_module, :__info__, 1) do
+      true ->
+        GenServer.call(@name, {:monitor, pid, view_module, room_name, nickname})
+       _-> raise("Module does not exist.")
+    end
   end
-  def get_monitored_from_process() do
-    GenServer.call(@name, {:get_monitored_from_process})
-  end
-  def get_monitored_pids_from_process() do
-    GenServer.call(@name, {:get_monitored_pids_from_process})
-  end
-  def monitor(pid, view_module, room_name, nickname) do
-    GenServer.call(@name, {:monitor, pid, view_module, room_name, nickname})
-  end
-  def get_monitored_by_room_name_and_nickname(room_name, nickname) do
-    GenServer.call(@name, {:get_by_room_and_nickname, room_name, nickname})
-  end
-  def clean_up_after_rejoin() do
-    GenServer.call(@name, {:clean_up_after_rejoin})
+  def monitor(_pid, _view_module, _room_name, _nickname) do
+   raise("Invalid arguments.")
   end
  # # # # # # # # # # # # # # # # # # handlers # # # # # # # # # # # # # # # # # #
   def handle_call({:monitor, pid, view_module, room_name, nickname}, _from, state) do
@@ -39,35 +48,9 @@ Module responsible for monitoring WarshipsWeb.Rooms.RoomsLive socket shutdowns a
     {:reply, :ok, %{state| views: Map.put(state.views, pid, {view_module, room_name, nickname})}}
   end
 
-  def handle_call({:get_monitored}, _from, state) do
-
-    {:reply, state.views, state}
-  end
-  def handle_call({:get_monitored_from_process}, _from, state) do
-
-    {:reply, Enum.filter(Enum.map(Map.to_list(state.views), fn x -> {elem(x, 0), Process.info(elem(x, 0))} end), fn y-> elem(y, 1) != nil end), state}
-  end
-
-
-  def handle_call({:get_monitored_pids_from_process}, _from, state) do
-    filtered = Enum.filter(Enum.map(Map.to_list(state.views), fn x -> {elem(x, 0), Process.info(elem(x, 0))} end), fn y-> elem(y, 1) != nil end)
-    {:reply, Enum.map(filtered, fn x -> elem(x,0) end), state}
-  end
-
-
-  def handle_call({:get_by_room_and_nickname, room_name, nickname}, _from, state) do
-    pid_list = Enum.filter(Map.to_list(state.views), fn x -> elem(elem(x,1),1) == room_name && elem(elem(x,1),2) ==nickname end)
-    monitored_processes = Enum.filter(Enum.map(pid_list, fn x -> {elem(x, 0), Process.info(elem(x, 0))} end), fn y-> elem(y, 1) != nil end)
-    {:reply, monitored_processes, state}
-  end
-
-  def handle_call({:clean_up_after_rejoin}, _from, state) do
-
-    new_views = clean_up(state)
-
-    {:reply, :ok, %{state | views: new_views}}
-  end
-
+@doc """
+Handles socket disconnections from `LiveView` modules.
+"""
   def handle_info({:DOWN, _ref, :process, pid, reason}, state) do
 
 
@@ -119,5 +102,4 @@ defp clean_up(state) do
     Map.merge(acc, x)
   end)
 end
-
 end
