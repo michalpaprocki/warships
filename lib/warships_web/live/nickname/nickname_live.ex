@@ -29,7 +29,7 @@ defmodule WarshipsWeb.Nickname.NicknameLive do
 
     nickname = Map.get(params, "nickname")
 
-    if String.length(nickname) < 5 do
+    if String.length(nickname) < 3 do
      {:noreply, put_flash(socket, :error, "Nickname too short.")}
 
     else
