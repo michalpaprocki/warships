@@ -76,7 +76,7 @@ alias Warships.RoomSupervisor
     raise("Variable `name` has to be of type string")
   end
   @doc """
-  Inserts a room to the :rooms table. Spawns `Warships.GameStore` and `Warships.ShipStore` processes via `Warships.RoomSupervisor`, and broadcasts a message to processes subscribed to `"rooms"` topic.
+  Inserts a room to the :rooms table. Spawns `Warships.GameStore` and `Warships.ShipStore` processes via `Warships.RoomSupervisor`, and broadcasts a message to processes subscribed to "rooms" topic.
 
   Returns: `:ok` || `{:error, "Could not create room, name taken"}`
 
@@ -98,7 +98,7 @@ alias Warships.RoomSupervisor
   end
 
   @doc """
-  Removes a room matching `"name"` from :rooms table. Terminates and deletes `Warships.RoomSupervisor`'s children spawned by `Warships.RoomStore.insert_room/2`, broadcasts a message to processes subscribed to `"rooms"` topic.
+  Removes a room matching `"name"` from :rooms table. Terminates and deletes `Warships.RoomSupervisor`'s children spawned by `Warships.RoomStore.insert_room/2`, broadcasts a message to processes subscribed to "rooms" topic.
 
   Returns: "Room "name" deleted"
 
@@ -106,8 +106,8 @@ alias Warships.RoomSupervisor
       iex>Warships.RoomStore.delete_room("room_name")
       "Room room_name deleted"
 
-      iex>Warships.RoomStore.delete_room("non_existing_room_name")
-      "Room non_existing_room_name deleted"
+      iex>Warships.RoomStore.delete_room("non_existent_room_name")
+      "Room non_existent_room_name deleted"
   """
   def delete_room(name) when is_binary(name) do
     GenServer.call(@name, {:delete, %{:name => name}})

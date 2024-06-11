@@ -24,7 +24,7 @@ defmodule WarshipsWeb.Home.HomeLive do
 
         {:ok, nickname} = Auth.decrypt_token(socket, user_token)
 
-        last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
+        last_msgs = ChatStore.async_get_last_msgs(:CS_lobby)
         lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
         new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
         new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)

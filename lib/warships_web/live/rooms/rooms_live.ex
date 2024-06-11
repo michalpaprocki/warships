@@ -39,7 +39,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
 
                   LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
-                  last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
+                  last_msgs = ChatStore.async_get_last_msgs(:CS_lobby)
                   lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                   new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
                   new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
@@ -56,7 +56,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                   })}
                 _ ->
                   LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
-                  last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
+                  last_msgs = ChatStore.async_get_last_msgs(:CS_lobby)
                   lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                   new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
                   new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
@@ -87,7 +87,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
               {:rejoin} ->
 
                 LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
-                last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
+                last_msgs = ChatStore.async_get_last_msgs(:CS_lobby)
                 lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                 new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
                 new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
@@ -104,7 +104,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                 })}
               _ ->
                 LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
-                last_msgs = ChatStore.async_10_last_msgs(:CS_lobby)
+                last_msgs = ChatStore.async_get_last_msgs(:CS_lobby)
                 lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
                 new_lobby_ = Map.replace(lobby_map, :messages, last_msgs)
                 new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
