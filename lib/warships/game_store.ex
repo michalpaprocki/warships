@@ -1,37 +1,38 @@
 defmodule Warships.GameStore do
   alias Warships.RoomStore
   alias Warships.ShipStore
+  alias Warships.StoreRegistry
   use GenServer
 
-  def start_link(name) do
+  def start_link(store_name) do
 
-   GenServer.start_link(__MODULE__, name, name: String.to_atom("GS_" <> name))
+   GenServer.start_link(__MODULE__, store_name, name: StoreRegistry.using_via("GameStore: "<>store_name))
 
   end
 
   def stop_link(server) do
 
-    GenServer.call(String.to_atom("GS_"<>server), {:suicide})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:suicide})
   end
 
   def init(init_arg) do
-    IO.puts("Starting  #{"GS_" <> init_arg}")
+    IO.puts("Starting #{"GameStore: "<> init_arg}")
 
-    # RoomSupervisor.start_child(String.to_atom(init_arg), Warships.ShipStore, :start_link, [init_arg])
+
     {:ok, %{:game => init_arg, :turn => "unset", :state => :awaiting_players, :winner => "", :players => %{}, :rematch =>%{:challenger=> :none, :request=> false}}}
   end
 
   def change_game_state(server, state) do
-    GenServer.call(String.to_atom("GS_" <> server), {:change_game_state, %{:state => state}})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:change_game_state, %{:state => state}})
   end
   def restart(server) do
-    GenServer.call(String.to_atom("GS_" <> server), {:restart})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:restart})
   end
   def request_another(server, player) do
-    GenServer.call(String.to_atom("GS_" <> server), {:request_rematch, %{:player => player}})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:request_rematch, %{:player => player}})
   end
   def accept_rematch(server) do
-    GenServer.call(String.to_atom("GS_" <> server), {:accept_rematch})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:accept_rematch})
   end
 
   @doc """
@@ -41,7 +42,7 @@ defmodule Warships.GameStore do
 
   """
   def add_player(server, name) do
-    GenServer.call(String.to_atom("GS_" <> server), {:add_player, %{:name => name}})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:add_player, %{:name => name}})
   end
 
   @doc """
@@ -51,26 +52,26 @@ defmodule Warships.GameStore do
 
   """
   def remove_player(server, name) do
-    GenServer.call(String.to_atom("GS_" <> server), {:remove_player, %{:name => name}})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:remove_player, %{:name => name}})
   end
   def toggle_ready(server, player) do
-    GenServer.call(String.to_atom("GS_" <> server), {:toggle_ready, %{:player=>player}})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:toggle_ready, %{:player=>player}})
   end
   def get_store(server) do
-    GenServer.call(String.to_atom("GS_" <> server), {:get_store})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_store})
   end
 
   def shoot(server, shooter, coords) do
-    GenServer.call(String.to_atom("GS_" <> server), {:shoot, %{:shooter => shooter, :coords => coords}})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:shoot, %{:shooter => shooter, :coords => coords}})
   end
   def get_players(server) do
-    GenServer.call(String.to_atom("GS_" <> server), {:get_players})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_players})
   end
   def get_player_count(server) do
-    GenServer.call(String.to_atom("GS_" <> server), {:get_player_count})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_player_count})
   end
   def test(server) do
-    GenServer.call(String.to_atom("GS_" <> server), {:test})
+    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:test})
   end
 
   ################################## handlers ##################################
@@ -326,7 +327,7 @@ defmodule Warships.GameStore do
 
     players_map = Enum.reduce(players_list, fn x, y -> Map.merge(x,y) end)
 
-    new_state = %{:game => state.game, :turn => Enum.at(Enum.filter(players, fn x-> x != String.to_atom(state.winner) end), 0, Enum.at(players, 0)), :state => :prep, :winner => "", :players => players_map , :rematch =>%{:challenger=> :none, :request=> false}}
+    new_state = %{:game => state.game, :turn => Enum.at(Enum.filter(players, fn x-> x != state.winner end), 0, Enum.at(players, 0)), :state => :prep, :winner => "", :players => players_map , :rematch =>%{:challenger=> :none, :request=> false}}
 
     WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
     {:reply, :ok, new_state}

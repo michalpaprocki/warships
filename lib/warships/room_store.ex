@@ -3,6 +3,7 @@ defmodule Warships.RoomStore do
   An :ets store for rooms
   """
 alias Warships.RoomSupervisor
+alias Warships.StoreRegistry
   use GenServer
   @name __MODULE__
 
@@ -143,8 +144,8 @@ alias Warships.RoomSupervisor
 
     case room do
       true ->
-        RoomSupervisor.start_child(String.to_atom("GS_"<>params.name), Warships.GameStore, :start_link, [params.name])
-        RoomSupervisor.start_child(String.to_atom("SS_"<>params.name), Warships.ShipStore, :start_link, [params.name])
+        RoomSupervisor.start_child(StoreRegistry.using_via("Supervisor:GameStore: "<>params.name), Warships.GameStore, :start_link, [params.name])
+        RoomSupervisor.start_child(StoreRegistry.using_via("Supervisor:ShipStore: "<>params.name), Warships.ShipStore, :start_link, [params.name])
         WarshipsWeb.Endpoint.broadcast("rooms", "room_created", %{:room => params.name})
         {:reply, :ok, state}
 
@@ -186,8 +187,8 @@ alias Warships.RoomSupervisor
 
   def handle_call({:delete, params}, _from, state) do
     :ets.delete(:rooms, params.name)
-    RoomSupervisor.delete_child("SS_"<>params.name)
-    RoomSupervisor.delete_child("GS_"<>params.name)
+    RoomSupervisor.delete_child(StoreRegistry.using_via("Supervisor:GameStore: "<>params.name))
+    RoomSupervisor.delete_child(StoreRegistry.using_via("Supervisor:ShipStore: "<>params.name))
     WarshipsWeb.Endpoint.broadcast("rooms", "room_deleted", %{:room => params.name})
     {:reply, "Room #{params.name} deleted", state}
   end

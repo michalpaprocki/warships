@@ -25,9 +25,9 @@
           <span class="border-r-2 p-1 border-gray-300">&#9724;</span><span class="border-l-2 p-1 border-gray-300">&#9723;</span>
           </button>
       </div>
-      <div class={"#{if @panel == "both", do: "flex md:flex-row flex-col md:h-[500px] ", else: "block h-[500px]"} transition"}>
+      <div class={"#{if @panel == "both", do: "flex md:flex-row flex-col md:h-[500px]", else: "block h-[500px]"} transition"}>
         
-        <div class={"xl:mt-6 sm:w-full md:w-[750px] lg:w-[1000px] h-[500px] grid grid-cols-10 grid-rows-10 gap-1 md:p-2  p-1 #{if @panel == "left" || @panel == "both", do: "translate-x-0", else: "translate-x-[-100%]" } transition #{ if @game.turn ==@nickname , do: "animate-shoot_now", else: ""}"}>
+        <div class={"sm:w-full md:w-[750px] lg:w-[1000px] h-[500px] grid grid-cols-10 grid-rows-10 gap-1 md:p-2  p-1 #{if @panel == "left" || @panel == "both", do: "translate-x-0", else: "translate-x-[-100%]" } transition #{ if @game.turn ==@nickname , do: "animate-shoot_now", else: ""}"}>
           <%= for x <- @x_range do %>
             <%= for y <- @y_range do %>
               <%= cond do %>
@@ -53,7 +53,7 @@
           <% end %>
         </div>
     
-        <div class={"xl:mt-6 sm:w-full md:w-[750px] lg:w-[1000px] min-h-[500px] grid grid-cols-10 grid-rows-10 gap-1 md:p-4 p-1 #{if @panel == "right", do: "translate-y-[-100%]", else: "translate-y-0" } transition #{ if @game.turn !=@nickname , do: "animate-alert", else: ""} "}>
+        <div class={"sm:w-full md:w-[750px] lg:w-[1000px] min-h-[500px] grid grid-cols-10 grid-rows-10 gap-1 md:p-2 p-1 #{if @panel == "right", do: "translate-y-[-100%]", else: "translate-y-0" } transition #{ if @game.turn !=@nickname , do: "animate-alert", else: ""} "}>
           <%= for x <- @x_range do %>
             <%= for y <- @y_range do %>
             <%= cond do %>

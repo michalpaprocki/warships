@@ -1,59 +1,56 @@
 defmodule Warships.ShipStore do
 use GenServer
-
+alias Warships.StoreRegistry
 @moduledoc """
 A store for ships coords.
 """
 
   def start_link(store_name) do
 
-    GenServer.start_link(__MODULE__, store_name, name: String.to_atom("SS_" <> store_name))
+    GenServer.start_link(__MODULE__, store_name, name: StoreRegistry.using_via("ShipStore: "<>store_name))
   end
 
-  def stop_link(name) do
-    GenServer.call(String.to_atom("SS_" <>name), {:suicide})
+  def stop_link(store_name) do
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>store_name), {:suicide})
   end
 
   def init(init_arg) do
-    IO.puts("Starting  #{"SS_" <> init_arg}")
+    IO.puts("Starting #{"ShipStore: "<>init_arg}")
 
     {:ok, %{:game => init_arg, :players => %{}}}
   end
   def add_player(server, name) do
-    GenServer.call(String.to_atom("SS_"<>server), {:add_player, %{:name =>name}})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:add_player, %{:name =>name}})
   end
   def remove_player(server, name) do
-    GenServer.call(String.to_atom("SS_"<>server), {:remove_player, %{:name =>name}})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:remove_player, %{:name =>name}})
   end
   def get_player_ships(server, player) do
-    GenServer.call(String.to_atom("SS_"<>server ), {:get_player_ships, %{:player => player}})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:get_player_ships, %{:player => player}})
   end
   def get_store(server) do
-    GenServer.call(String.to_atom("SS_"<>server ), {:get_store})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:get_store})
   end
-  def ping() do
-    GenServer.call(String.to_atom("SS_test_room" ), {:ping})
-  end
-  def test() do
-    GenServer.call(String.to_atom("SS_test_room" ), {:test, %{:player => "player", :ship_coords => "ship_coords"}})
+  def ping(server) do
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:ping})
   end
   @doc """
   ## add_ship("server", "player", "class", [{"x", "y"}])
   """
   def add_ship(server, player, class, ship) do
-    GenServer.call(String.to_atom("SS_" <> server), {:add_ship, %{:player => player, :class => class, :ship => ship}})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:add_ship, %{:player => player, :class => class, :ship => ship}})
   end
    @doc """
   ## add_ship("server", "player", "class", "sid")
   """
   def remove_ship(server, player, class, sid) do
-    GenServer.call(String.to_atom("SS_" <> server), {:remove_ship, %{:player => player, :class => class, :sid => sid}})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server), {:remove_ship, %{:player => player, :class => class, :sid => sid}})
   end
   @doc """
   ## check_if_ship_hit("server", "target_player", {"x", "y"})
   """
   def check_if_ship_hit(server, target_player, coords) do
-    GenServer.call(String.to_atom("SS_" <> server),{:check_if_ship_hit, %{:target_player=> target_player, :coords => coords}})
+    GenServer.call(StoreRegistry.using_via("ShipStore: "<>server),{:check_if_ship_hit, %{:target_player=> target_player, :coords => coords}})
   end
 ################################## handlers ##################################
   def handle_call({:add_player, params}, _from, state) do
@@ -172,10 +169,6 @@ A store for ships coords.
       end
   end
 
-  def handle_call({:test, _params}, _from, state) do
-
-    {:reply, :normal, state}
-  end
   def handle_call({:ping}, _from, state) do
     {:reply, :pong, state}
   end

@@ -40,8 +40,8 @@ Adds a processes to supervision.
 
   """
   def delete_child(id) do
-    Supervisor.terminate_child(:room_supervisor, String.to_atom(id))
-    Supervisor.delete_child(:room_supervisor,  String.to_atom(id))
+    Supervisor.terminate_child(:room_supervisor, id)
+    Supervisor.delete_child(:room_supervisor, id)
   end
 
 end
