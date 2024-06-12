@@ -19,7 +19,7 @@ defmodule WarshipsWeb.Nickname.NicknameLive do
       {%{}, types}
       |> Ecto.Changeset.cast(params, Map.keys(types))
       |> Ecto.Changeset.validate_required(:nickname)
-      |> Ecto.Changeset.validate_length(:nickname, min: 5)
+      |> Ecto.Changeset.validate_length(:nickname, min: 3)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset, as: :nickname))}
