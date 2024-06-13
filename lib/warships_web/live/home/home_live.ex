@@ -31,6 +31,11 @@ defmodule WarshipsWeb.Home.HomeLive do
         new_joined_rooms = Map.replace(socket.assigns.joined_rooms, :lobby, new_lobby_)
 
         LiveMonitor.monitor(self(), __MODULE__, "home", socket.assigns.nickname)
+        if Map.has_key?(socket.assigns.flash, "error") || Map.has_key?(socket.assigns.flash, "info") do
+          clean_flash()
+
+
+        end
         {:ok,
          socket
          |> assign(:joined_rooms, new_joined_rooms)
