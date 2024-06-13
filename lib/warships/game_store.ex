@@ -17,8 +17,6 @@ defmodule Warships.GameStore do
 
   def init(init_arg) do
     IO.puts("Starting #{"GameStore: "<> init_arg}")
-
-
     {:ok, %{:game => init_arg, :turn => "unset", :state => :awaiting_players, :winner => "", :players => %{}, :rematch =>%{:challenger=> :none, :request=> false}}}
   end
 
@@ -75,6 +73,7 @@ defmodule Warships.GameStore do
   end
 
   ################################## handlers ##################################
+
 
   def handle_call({:add_player, params}, _from, state) do
     cond do
@@ -327,7 +326,7 @@ defmodule Warships.GameStore do
 
     players_map = Enum.reduce(players_list, fn x, y -> Map.merge(x,y) end)
 
-    new_state = %{:game => state.game, :turn => Enum.at(Enum.filter(players, fn x-> x != state.winner end), 0, Enum.at(players, 0)), :state => :prep, :winner => "", :players => players_map , :rematch =>%{:challenger=> :none, :request=> false}}
+    new_state = %{:game => state.game, :turn => Enum.at(Enum.filter(players, fn x-> x != state.winner end), 0), :state => :prep, :winner => "", :players => players_map , :rematch =>%{:challenger=> :none, :request=> false}}
 
     WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
     {:reply, :ok, new_state}

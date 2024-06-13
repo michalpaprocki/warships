@@ -1,14 +1,14 @@
 import Config
 
 # Configure your database
-config :warships, Warships.Repo,
-  username: "user",
-  password: "password",
-  hostname: "localhost",
-  database: "warships_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 0
+# config :warships, Warships.Repo,
+#   username: "user",
+#   password: "password",
+#   hostname: "localhost",
+#   database: "warships_dev",
+#   stacktrace: true,
+#   show_sensitive_data_on_connection_error: true,
+#   pool_size: 0
 
 # For development, we disable any cache and enable
 # debugging and code reloading.

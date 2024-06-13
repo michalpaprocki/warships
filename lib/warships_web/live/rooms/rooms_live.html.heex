@@ -12,18 +12,20 @@
         <.live_component module={WarshipsWeb.Spinners.Spinner1} id="spinner1" />
         <.button class="uppercase" phx-click="leave">leave</.button>
       </div>
-    <% :game -> %>
+    <% :prep -> %>
 
       <.live_component module={WarshipsWeb.Game.PrepBoard.PrepBoard} id="prep_board" game={@game} nickname={@nickname}  />
-    <% :prep -> %>
+    <% :game -> %>
      
       <.live_component module={WarshipsWeb.Game.Board.Board} id="board" game={@game} nickname={@nickname} /> 
 
     <% :game_over -> %>
+    <div class="flex w h-full justify-center items-center flex-col gap-2">
 
       <span class="uppercase text-xl">Game over </span>
       <span class="uppercase text-xl">winner : <%= @game.winner %> </span>
-      <div class="flex flex-col gap-2 py-7 items-center">
+    </div>
+    <div class="flex flex-col gap-2 py-7 items-center">
 
       <%= cond do %>
         <% @game.rematch.challenger == @nickname && @game.rematch.request -> %>
