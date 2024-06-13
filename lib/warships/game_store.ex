@@ -337,6 +337,7 @@ defmodule Warships.GameStore do
   end
 
   def handle_info(:timeout, state) do
+    :ets.delete(:refs, self())
     RoomStore.delete_room(state.game)
     IO.puts("""
       #{"GS_"<>state.game} and #{"SS_"<>state.game} terminating due to inactivity...
@@ -347,8 +348,9 @@ defmodule Warships.GameStore do
   defp check_if_all_ships_sunken?(map_of_hit_ships, amount_of_ships) do
     length(Enum.map(map_of_hit_ships, fn x -> x end)) == amount_of_ships  && !Enum.member?(Enum.map(map_of_hit_ships, fn x -> elem(elem(x,1),0) end), :hit)
   end
+
   defp begin_termination_process(pid) do
-    ref = Process.send_after(pid, :timeout, 10 * 60 * 1000)
+    ref = Process.send_after(pid, :timeout, 2 * 1000)
     :ets.insert(:refs, {pid, ref})
   end
   defp halt_termination_process(pid) do
