@@ -15,6 +15,7 @@ defmodule Warships.Application do
       Warships.RoomSupervisor,
       Warships.LiveMonitor,
       Warships.StoreRegistry,
+      Warships.RefStore,
       # Warships.Repo,
       {DNSCluster, query: Application.get_env(:warships, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Warships.PubSub},

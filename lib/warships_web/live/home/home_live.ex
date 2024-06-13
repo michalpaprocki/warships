@@ -1,9 +1,10 @@
 defmodule WarshipsWeb.Home.HomeLive do
+  use WarshipsWeb, :live_view
   alias Warships.LiveMonitor
+  alias Warships.RefStore
   alias Warships.GameStore
   alias Warships.RoomSupervisor
   alias Warships.ChatStore
-  use WarshipsWeb, :live_view
   alias Ecto.Changeset
   alias Warships.RoomStore
   alias WarshipsWeb.Auth.Auth
@@ -100,6 +101,7 @@ defmodule WarshipsWeb.Home.HomeLive do
 
   def handle_event("save", %{"room_form" => params}, socket) do
     if String.length(params["room_name"]) < 3 do
+      clean_flash()
       {:noreply, put_flash(socket, :error, "Name too short.")}
     else
       resp = RoomStore.insert_room(params["room_name"], params["room_password"])
@@ -109,6 +111,7 @@ defmodule WarshipsWeb.Home.HomeLive do
           {:noreply, push_navigate(socket, to: ~p"/rooms/#{params["room_name"]}")}
 
         {:error, msg} ->
+          clean_flash()
           {:noreply, put_flash(socket, :error, msg)}
       end
     end
@@ -127,6 +130,12 @@ defmodule WarshipsWeb.Home.HomeLive do
   def handle_event("click_event", _, socket) do
     users = ChatStore.get_chat_members(:CS_lobby)
     {:noreply, socket |> assign(:users, users)}
+  end
+
+
+  def handle_info(:clear_flash, socket) do
+    RefStore.delete_ref(self())
+  {:noreply, socket |> clear_flash()}
   end
 
   def handle_info(msg, socket) do
@@ -214,5 +223,19 @@ defmodule WarshipsWeb.Home.HomeLive do
   end
   defp extract_name(name) do
     String.slice(elem(elem(name,2),1), 22, String.length(elem(elem(name,2),1))-1)
+  end
+  defp clean_flash() do
+    retrieved_ref = RefStore.get_ref(self())
+    case length(retrieved_ref) do
+      0->
+        ref = Process.send_after(self(), :clear_flash, 5000)
+        RefStore.add_ref(self(), ref)
+
+      _->
+        RefStore.delete_ref(self())
+        Process.cancel_timer(hd(hd(retrieved_ref)))
+        ref = Process.send_after(self(), :clear_flash, 5000)
+        RefStore.add_ref(self(), ref)
+    end
   end
 end

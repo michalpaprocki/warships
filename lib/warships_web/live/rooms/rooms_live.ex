@@ -1,4 +1,5 @@
 defmodule WarshipsWeb.Rooms.RoomsLive do
+  alias Warships.RefStore
   alias Warships.LiveMonitor
   alias WarshipsWeb.Game.PrepBoard.PrepBoard
   alias Warships.GameStore
@@ -156,7 +157,24 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
   end
   def handle_info({:update_flash, {flash_type, msg}}, socket) do
 
-    {:noreply, socket |> put_flash(flash_type, msg)}
+      retrived_ref = RefStore.get_ref(self())
+      case length(retrived_ref) do
+        0->
+          ref = Process.send_after(self(), :clear_flash, 5000)
+          RefStore.add_ref(self(), ref)
+          {:noreply, socket |> put_flash(flash_type, msg)}
+
+        _->
+          RefStore.delete_ref(self())
+          Process.cancel_timer(hd(hd(retrived_ref)))
+          ref = Process.send_after(self(), :clear_flash, 5000)
+          RefStore.add_ref(self(), ref)
+          {:noreply, socket |> put_flash(flash_type, msg)}
+      end
+  end
+  def handle_info(:clear_flash, socket) do
+      RefStore.delete_ref(self())
+    {:noreply, socket |> clear_flash()}
   end
 
   def handle_info(msg, socket) do

@@ -1,6 +1,7 @@
 defmodule WarshipsWeb.Nickname.NicknameLive do
-  alias Warships.ChatStore
   use WarshipsWeb, :live_view
+  alias Warships.ChatStore
+  alias Warships.RefStore
 
   def mount(_params, session, socket) do
 
@@ -30,19 +31,40 @@ defmodule WarshipsWeb.Nickname.NicknameLive do
     nickname = Map.get(params, "nickname")
 
     if String.length(nickname) < 3 do
+      clean_flash()
      {:noreply, put_flash(socket, :error, "Nickname too short.")}
 
     else
+      members_online = ChatStore.get_chat_members(:CS_lobby)
+      if Enum.member?(members_online, nickname) do
 
-          members_online = ChatStore.get_chat_members(:CS_lobby)
-          if Enum.member?(members_online, nickname) do
-
-            {:noreply, put_flash(socket, :error, "Nickname taken.")}
-          else
-            {:noreply, redirect(socket, to: ~p"/nickname/#{nickname}")}
-          end
+        clean_flash()
+        {:noreply, put_flash(socket, :error, "Nickname taken.")}
+      else
+        {:noreply, redirect(socket, to: ~p"/nickname/#{nickname}")}
+      end
 
 
     end
   end
+
+
+def handle_info(:clear_flash, socket) do
+    RefStore.delete_ref(self())
+  {:noreply, socket |> clear_flash()}
+end
+defp clean_flash() do
+  retrieved_ref = RefStore.get_ref(self())
+  case length(retrieved_ref) do
+    0->
+      ref = Process.send_after(self(), :clear_flash, 5000)
+      RefStore.add_ref(self(), ref)
+
+    _->
+      RefStore.delete_ref(self())
+      Process.cancel_timer(hd(hd(retrieved_ref)))
+      ref = Process.send_after(self(), :clear_flash, 5000)
+      RefStore.add_ref(self(), ref)
+  end
+end
 end

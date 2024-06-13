@@ -9,7 +9,6 @@ defmodule Warships.RoomSupervisor do
   end
 
   def init(_) do
-    :ets.new(:refs, [:public, :named_table, :set])
     children = [
       {DynamicSupervisor, name: __MODULE__}
     ]

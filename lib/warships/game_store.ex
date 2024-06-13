@@ -1,4 +1,5 @@
 defmodule Warships.GameStore do
+  alias Warships.RefStore
   alias Warships.RoomStore
   alias Warships.ShipStore
   alias Warships.StoreRegistry
@@ -68,9 +69,7 @@ defmodule Warships.GameStore do
   def get_player_count(server) do
     GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_player_count})
   end
-  def test(server) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:test})
-  end
+
 
   ################################## handlers ##################################
 
@@ -331,13 +330,10 @@ defmodule Warships.GameStore do
     WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
     {:reply, :ok, new_state}
   end
-  def handle_call({:test}, _from, state) do
 
-    {:reply, state, state}
-  end
 
   def handle_info(:timeout, state) do
-    :ets.delete(:refs, self())
+    RefStore.delete_ref(self())
     RoomStore.delete_room(state.game)
     IO.puts("""
       #{"GS_"<>state.game} and #{"SS_"<>state.game} terminating due to inactivity...
@@ -345,19 +341,20 @@ defmodule Warships.GameStore do
     {:noreply, state}
   end
 
-  defp check_if_all_ships_sunken?(map_of_hit_ships, amount_of_ships) do
-    length(Enum.map(map_of_hit_ships, fn x -> x end)) == amount_of_ships  && !Enum.member?(Enum.map(map_of_hit_ships, fn x -> elem(elem(x,1),0) end), :hit)
+  defp begin_termination_process(pid) do
+    ref = Process.send_after(pid, :timeout, 10 * 60 * 1000)
+    RefStore.add_ref(pid, ref)
   end
 
-  defp begin_termination_process(pid) do
-    ref = Process.send_after(pid, :timeout, 2 * 1000)
-    :ets.insert(:refs, {pid, ref})
-  end
   defp halt_termination_process(pid) do
-    ref = :ets.match(:refs, {pid, :"$1"})
+    ref = RefStore.get_ref(pid)
     case length(ref) do
       0-> :ok
       _-> Process.cancel_timer(hd(hd(ref)))
     end
+  end
+
+  defp check_if_all_ships_sunken?(map_of_hit_ships, amount_of_ships) do
+    length(Enum.map(map_of_hit_ships, fn x -> x end)) == amount_of_ships  && !Enum.member?(Enum.map(map_of_hit_ships, fn x -> elem(elem(x,1),0) end), :hit)
   end
 end
