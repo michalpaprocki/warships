@@ -53,7 +53,6 @@ Handles socket disconnections from `LiveView` modules.
 """
   def handle_info({:DOWN, _ref, :process, pid, reason}, state) do
 
-
     case reason do
       {:shutdown, :left} ->
         server = elem(Map.get(state.views, pid), 1)
@@ -83,8 +82,20 @@ Handles socket disconnections from `LiveView` modules.
           ChatStore.remove_chat_member(:CS_lobby, nickname)
           {:noreply, %{state | views: new_state}}
         end
+      {:shutdown, {:redirect, %{to: "/logout"}}} ->
+        server = elem(Map.get(state.views, pid), 1)
+        nickname = elem(Map.get(state.views, pid), 2)
+        if server == "home" do
 
-
+          new_state = Map.delete(state.views, pid)
+          ChatStore.remove_chat_member(:CS_lobby, nickname)
+          {:noreply, %{state | views: new_state}}
+        else
+          GameStore.remove_player(server, nickname)
+          new_state = Map.delete(state.views, pid)
+          ChatStore.remove_chat_member(:CS_lobby, nickname)
+          {:noreply, %{state | views: new_state}}
+        end
       _->
         new_views = clean_up(state)
 
