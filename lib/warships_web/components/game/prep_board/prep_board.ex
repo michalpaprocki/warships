@@ -15,7 +15,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
         adjacent = gen_adjacent_from_ship_map(player_ships)
 
-        {:ok, socket |> assign(:phase, :first)|> assign(:adjacent, adjacent) |> assign(:ships_on_board, player_ships)|> assign(:selected_coords, []) |> assign(assigns)|> assign_new(:x_range, fn  -> generate_x_board() end)|> assign_new(:y_range,fn  -> generate_y_board() end )}
+        {:ok, socket|> assign(:hover_coords, %{"x"=>"", "y"=> ""}) |> assign(:phase, :first)|> assign(:adjacent, adjacent) |> assign(:ships_on_board, player_ships)|> assign(:selected_coords, {"", ""}) |> assign(assigns)|> assign_new(:x_range, fn  -> generate_x_board() end)|> assign_new(:y_range,fn  -> generate_y_board() end )}
     end
 
   end
@@ -23,12 +23,12 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
   def handle_event("select_start", %{"x" => x , "y" => y}, socket) do
 
 
-    {:noreply, socket |> assign(:phase, :second)|> assign(:selected_coords, [{x,y}])}
+    {:noreply, socket |> assign(:phase, :second)|> assign(:selected_coords, {x,y})}
   end
   def handle_event("select_end", %{"x" => x , "y" => y}, socket) do
     cond do
 
-      Enum.at(socket.assigns.selected_coords, 0) == {x, y} ->
+      socket.assigns.selected_coords == {x, y} ->
 
             resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m1", [{x,y}])
 
@@ -36,20 +36,20 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
               :class_full->
                 send(self(), {:update_flash, {:error,  "Can't place more ships of this type."}})
-                {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
               _ ->
 
-                  {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                  {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
             end
 
 
 
-      elem(Enum.at(socket.assigns.selected_coords, 0), 0) == x ->
-            case abs(String.to_integer(elem(Enum.at(socket.assigns.selected_coords, 0), 1)) - String.to_integer(y)) do
+      elem(socket.assigns.selected_coords, 0) == x ->
+            case abs(String.to_integer(elem(socket.assigns.selected_coords, 1)) - String.to_integer(y)) do
 
               1 ->
-              ship_coords =  gen_horizontal_ship_cords_(y, elem(Enum.at(socket.assigns.selected_coords, 0),1), x)
+              ship_coords =  gen_horizontal_ship_cords_(y, elem(socket.assigns.selected_coords, 1), x)
               resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m2", ship_coords)
 
 
@@ -57,14 +57,14 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
                 :class_full->
                   send(self(), {:update_flash, {:error,  "Can't place more ships of this type."}})
-                  {:noreply, socket |> assign(:phase, :first) |> assign(:selected_coords, [])}
+                  {:noreply, socket |> assign(:phase, :first) |> assign(:selected_coords, {"", ""})}
                   _ ->
 
-                    {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                    {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
               end
 
               2 ->
-              ship_coords =  gen_horizontal_ship_cords_(y, elem(Enum.at(socket.assigns.selected_coords, 0),1), x)
+              ship_coords =  gen_horizontal_ship_cords_(y, elem(socket.assigns.selected_coords, 1), x)
               resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m3", ship_coords)
 
               case resp do
@@ -72,26 +72,26 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
                 :class_full->
 
                   send(self(), {:update_flash, {:error,  "Can't place more ships of this type."}})
-                  {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                  {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
                   _ ->
 
-                    {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                    {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
               end
               3 ->
-              ship_coords =  gen_horizontal_ship_cords_(y, elem(Enum.at(socket.assigns.selected_coords, 0),1), x)
+              ship_coords =  gen_horizontal_ship_cords_(y, elem(socket.assigns.selected_coords,1), x)
               resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m4", ship_coords)
 
               case resp do
 
                 :class_full->
                   send(self(), {:update_flash, {:error,  "Can't place more ships of this type."}})
-                  {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                  {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
                   _ ->
 
-                    {:noreply, socket  |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                    {:noreply, socket  |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
               end
 
 
@@ -99,19 +99,19 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
               _->
                 send(self(), {:update_flash, {:error,  "Too long, you can spawn 4 unit long ships max."}})
-              {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+              {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
             end
 
-      elem(Enum.at(socket.assigns.selected_coords, 0), 1) == y ->
+      elem(socket.assigns.selected_coords, 1) == y ->
 
 
-            index_of_x = Enum.find_index(socket.assigns.x_range, fn xr -> xr == elem(Enum.at(socket.assigns.selected_coords, 0), 0) end)
+            index_of_x = Enum.find_index(socket.assigns.x_range, fn xr -> xr == elem(socket.assigns.selected_coords, 0) end)
             index_of_coords_x = Enum.find_index(socket.assigns.x_range, fn xr -> xr == x end)
 
             case abs(index_of_x -( index_of_coords_x))  do
               1 ->
-                  ship_coords = gen_vertical_ship_cords_(x, elem(Enum.at(socket.assigns.selected_coords, 0), 0), y)
+                  ship_coords = gen_vertical_ship_cords_(x, elem(socket.assigns.selected_coords, 0), y)
 
                   resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m2", ship_coords)
 
@@ -119,28 +119,28 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
                     :class_full->
                       send(self(), {:update_flash, {:error,  "Can't place more ships of this type."}})
-                      {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                      {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
                      _ ->
-                        {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                        {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
                   end
 
               2 ->
-                  ship_coords = gen_vertical_ship_cords_(x, elem(Enum.at(socket.assigns.selected_coords, 0), 0), y)
+                  ship_coords = gen_vertical_ship_cords_(x, elem(socket.assigns.selected_coords, 0), y)
 
                   resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m3", ship_coords)
                   case resp do
 
                     :class_full->
                       send(self(), {:update_flash, {:error, "Can't place more ships of this type."}})
-                      {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                      {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
                      _ ->
-                        {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                        {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
                   end
 
               3 ->
-                  ship_coords = gen_vertical_ship_cords_(x, elem(Enum.at(socket.assigns.selected_coords, 0), 0), y)
+                  ship_coords = gen_vertical_ship_cords_(x, elem(socket.assigns.selected_coords, 0), y)
 
                   resp =  ShipStore.add_ship(socket.assigns.game.game, socket.assigns.nickname, "m4", ship_coords)
 
@@ -148,16 +148,16 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
                     :class_full->
                       send(self(), {:update_flash, {:error, "Can't place more ships of this type."}})
-                      {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                      {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
 
                      _ ->
-                        {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+                        {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
                   end
 
 
               _->
                 send(self(), {:update_flash, {:error, "Too long, you can spawn 4 unit long ships max."}})
-              {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, [])}
+              {:noreply, socket |> assign(:phase, :first)|> assign(:selected_coords, {"", ""})}
               end
      true ->
           send(self(), {:update_flash, {:error, "Invalid ship placement"}})
@@ -205,7 +205,10 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
     {:noreply, socket}
   end
+  def handle_event("prep_board_hover", params, socket) do
 
+    {:noreply, socket|> assign(:hover_coords, params)}
+  end
 ####  ↓↓ possibly, a better place for board generation would be GameStore.init/1  ↓↓ ####
 defp generate_x_board() do
   Enum.map(?a..?j, fn x -> <<x :: utf8>>  end)

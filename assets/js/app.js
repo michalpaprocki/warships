@@ -21,23 +21,22 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import "./chat_socket";
-import socket from "./chat_socket";
-const Hooks = {};
-Hooks.test = {
-  mounted() {
-    const lobbyChatInput = document.querySelector("#chat-input");
-    const lobbyMessagesContainer = document.querySelector("#chat-messages");
 
-    if (lobbyChatInput && lobbyMessagesContainer) {
-      channel = socket.channel("room:lobby", {});
-      channel.join().receive("ok", () => console.log());
-      lobbyChatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && lobbyChatInput.value.length > 0 ) {
-          channel.push("new_msg", { body: lobbyChatInput.value });
-          lobbyChatInput.value = "";
-        }
-      });
+
+const Hooks = {};
+Hooks.detect_mouse_position = {
+  mounted() {
+    
+    const prepBoard = document.querySelector("#prep_board");
+    if(prepBoard) {
+      chilrenArray = Array.from(prepBoard.children)
+      chilrenArray.map(el => 
+          el.addEventListener("mouseover", e => {
+  
+      this.pushEventTo(prepBoard, "prep_board_hover", {x: el.getAttribute("phx-value-x"), y: el.getAttribute("phx-value-y")})
+
+      })
+      )
     }
   },
 };
@@ -47,6 +46,7 @@ let csrfToken = document
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
+  hooks: Hooks
 });
 
 // Show progress bar on live navigation and form submits

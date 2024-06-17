@@ -3,11 +3,11 @@
 
     <%= if @game.turn ==@nickname do%>
       <div class="basis-0 w-fit mt-2 transition self-center md:translate-y-32 xl:translate-y-0 sm:p-4 p-2 animate-pulse bg-violet-500 text-white rounded-lg mb-4 font-semibold shadow-black shadow-sm z-10">
-        Give &apos;em hell - Attack !
+        Your turn - Fire!
       </div>
       <% else %>
       <div class="basis-0 w-fit mt-2 transition self-center md:translate-y-32 xl:translate-y-0 sm:p-4 p-2 animate-pulse bg-red-500 text-white rounded-lg mb-4 font-semibold shadow-black shadow-sm z-10">
-      Brace for impact - Any moment now...
+        Opponent's turn!
       </div>
     <% end %>
 

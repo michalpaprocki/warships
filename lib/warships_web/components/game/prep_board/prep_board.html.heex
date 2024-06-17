@@ -1,28 +1,30 @@
 <div class="bg-blue-300 flex lg:flex-row flex-col  gap-2 shadow-md shadow-black rounded-sm">
     
-    
+
 
     <div class="md:p-4 p-2 text-sm flex lg:flex-col flex-row lg:justify-normal justify-between lg:items-start items-center gap-5">
+   
         <div class="p-1 px-4">
             <div class="font-semibold capitalize pb-4">ships spawned:</div>
 
-                <div class="flex justify-between py-1 text-xs">
-                    <span>type</span>
-                    <span>amount</span>
-                </div>
-                <%= for {k,v} <- @ships_on_board do %>
+            <div class="flex justify-between py-1 text-xs">
+                <span>type</span>
+                <span>amount</span>
+            </div>
+
+            <%= for {k,v} <- @ships_on_board do %>
                     <div class="flex justify-between py-1 font-semibold">
                         <div class="flex gap-2 w-12 justify-between">
                             <span><%= k %>  </span>
                     <%= case k do %>
                <% :m1 ->      %>
-               <span class="#{case k d} h-4 w-4 bg-violet-200" /> 
+               <span class="h-4 w-4 bg-violet-200" /> 
                <% :m2 ->      %>
-               <span class="#{case k d} h-4 w-4 bg-violet-400" /> 
+               <span class="h-4 w-4 bg-violet-400" /> 
                <% :m3 ->      %>
-               <span class="#{case k d} h-4 w-4 bg-violet-600" /> 
+               <span class="h-4 w-4 bg-violet-600" /> 
                <% :m4 ->      %>
-               <span class="#{case k d} h-4 w-4 bg-violet-800" /> 
+               <span class="h-4 w-4 bg-violet-800" /> 
 
                <% end %>
                         </div>
@@ -55,8 +57,8 @@
             </div>
 
         </div>
-
-    <div class="xl:w-[1000px] md:w-[750px] w-full h-[500px] grid grid-cols-10 grid-rows-10 gap-1 p-1 select-none transition">
+      
+    <div id="prep_board" phx-hook="detect_mouse_position" class="xl:w-[1000px] md:w-[750px] w-full h-[500px] grid grid-cols-10 grid-rows-10 gap-1 p-1 select-none transition">
       <%= for x <- @x_range do %>
         <%= for y <- @y_range do %>
         
@@ -104,56 +106,72 @@
                 <% :second ->  %>
                         <%= cond do %>
                         <% Enum.member?(List.flatten(Enum.map(@adjacent.m1, fn {_k,v} -> v  end)) , {to_string(x),to_string(y)}) ->    %>
-                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" />
+                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" phx-value-x={x} phx-value-y={y} />
       
                         <% Enum.member?(List.flatten(Enum.map(@adjacent.m2, fn {_k,v} -> v  end)) , {to_string(x),to_string(y)}) ->    %>
-                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" />
+                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" phx-value-x={x} phx-value-y={y} />
    
                         <% Enum.member?(List.flatten(Enum.map(@adjacent.m3, fn {_k,v} -> v  end)) , {to_string(x),to_string(y)}) ->    %>
-                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" />
+                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" phx-value-x={x} phx-value-y={y} />
                             
                             
                         <% Enum.member?(List.flatten(Enum.map(@adjacent.m4, fn {_k,v} -> v  end)) , {to_string(x),to_string(y)}) ->    %>
-                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" />
+                        <div class=" ring-1  cursor-not-allowed  bg-stripes bg-1x1" phx-value-x={x} phx-value-y={y} />
                             
         
                         <% Enum.member?(List.flatten(Enum.map(@ships_on_board.m1.ships, fn {_k,v} -> v.coords  end)) , {to_string(x),to_string(y)}) ->    %>
-                        <div  class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-200 ">
+                        <div  class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-200 " phx-value-x={x} phx-value-y={y}>
                             <%= x %> <%= y %>
                             
                         </div>
                         
                         <% Enum.member?(List.flatten(Enum.map(@ships_on_board.m2.ships, fn {_k,v} -> v.coords  end)) , {to_string(x),to_string(y)}) -> %>
-                        <div class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-400 ">
+                        <div class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-400 " phx-value-x={x} phx-value-y={y}>
                             <%= x %> <%= y %>
                             
                         </div>
                         <% Enum.member?(List.flatten(Enum.map(@ships_on_board.m3.ships, fn {_k,v} -> v.coords  end)) , {to_string(x),to_string(y)}) -> %>
-                        <div class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-600 ">
+                        <div class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-600 " phx-value-x={x} phx-value-y={y}>
                             <%= x %> <%= y %>
                             
                         </div>
                         <% Enum.member?(List.flatten(Enum.map(@ships_on_board.m4.ships, fn {_k,v} -> v.coords  end)) , {to_string(x),to_string(y)}) -> %>
-                        <div  class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-800 ">
+                        <div  class="rounded-md transition text-sm uppercase font-semibold flex justify-center items-center hover:shadow-glow hover:shadow-red-500 ring-1 cursor-pointer bg-violet-800 " phx-value-x={x} phx-value-y={y}>
                             <%= x %> <%= y %>
                             
                         </div>
-                         <% Enum.member?(@selected_coords, {to_string(x),to_string(y)}) ->  %> 
-               
-                        <div phx-click="select_end" phx-target={@myself} phx-value-x={x} phx-value-y={y} class="rounded-md flex justify-center items-center text-sm uppercase font-semibold transition ring-1  cursor-pointer bg-emerald-500">
-                            <%= x %> <%= y %>
-                        </div>
+                
                         <% true -> %>
-                        <div phx-click="select_end" phx-target={@myself} phx-value-x={x} phx-value-y={y} class="rounded-md text-gray-700 hover:text-black transition ring-1 text-sm uppercase font-semibold flex justify-center items-center cursor-pointer hover:shadow-glow hover:bg-emerald-500">
+                        <div phx-click="select_end" phx-target={@myself} phx-value-x={x} phx-value-y={y} class={"rounded-md  transition ring-1 text-sm uppercase font-semibold flex justify-center items-center cursor-pointer
+                        #{cond do
+                            @selected_coords == {to_string(x),to_string(y)} ->
+                            "shadow-glow bg-emerald-500 hover:bg-violet-200"
+
+                            WarshipsWeb.TemplateFilter.get_filtered(@selected_coords, @hover_coords, x, y, 1) ->
+                            "shadow-glow bg-violet-400"
+
+                            WarshipsWeb.TemplateFilter.get_filtered(@selected_coords, @hover_coords, x, y, 2) ->
+                            "shadow-glow bg-violet-600 text-gray-300"
+
+                            WarshipsWeb.TemplateFilter.get_filtered(@selected_coords, @hover_coords, x, y, 3) ->
+                            "shadow-glow bg-violet-800 text-gray-300"
+
+                        
+                            true-> ""
+                        end}
+                        "}>
                             <%= x %> <%= y %>
                         </div>
-                    
+                  
            
                     <% end %>
                 <% end %>
         <% end %>
       <% end %>
     </div>
-  
+    
+       <%= if @selected_coords != [] do  %>
+     
+       <% end %>
   </div>
   

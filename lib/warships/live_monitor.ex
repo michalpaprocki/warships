@@ -101,7 +101,7 @@ Handles socket disconnections from `LiveView` modules.
 
         {:noreply, %{state|views: new_views}}
     end
-
+      {:noreply, state}
   end
 
 defp clean_up(state) do
