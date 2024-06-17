@@ -58,7 +58,7 @@
 
         </div>
       
-    <div id="prep_board" phx-hook="detect_mouse_position" class="xl:w-[1000px] md:w-[750px] w-full h-[500px] grid grid-cols-10 grid-rows-10 gap-1 p-1 select-none transition">
+    <div id="prep_board" phx-hook="detect_mouse_position" class="text-gray-700 xl:w-[1000px] md:w-[750px] w-full h-[500px] grid grid-cols-10 grid-rows-10 gap-1 p-1 select-none transition">
       <%= for x <- @x_range do %>
         <%= for y <- @y_range do %>
         
@@ -97,7 +97,7 @@
                     </div>
                     <% true-> %>
                         <div phx-click="select_start" phx-target={@myself} phx-value-x={x} phx-value-y={y} 
-                        class="rounded-md text-gray-700 hover:text-black transition ring-1 text-sm uppercase font-semibold flex justify-center items-center cursor-pointer hover:shadow-glow hover:bg-emerald-500">
+                        class="rounded-md  hover:text-black transition ring-1 text-sm uppercase font-semibold flex justify-center items-center cursor-pointer hover:shadow-glow hover:bg-emerald-500">
                             <%= x %> <%= y %>
                        
                         </div>
@@ -169,9 +169,5 @@
         <% end %>
       <% end %>
     </div>
-    
-       <%= if @selected_coords != [] do  %>
-     
-       <% end %>
   </div>
   

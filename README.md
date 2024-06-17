@@ -2,7 +2,7 @@
 
 # Warships
 
-My spin on the Battleships game. 🚢
+Batteships game for 2 players. 🚢
 
 ## Objectives
 
@@ -13,8 +13,8 @@ My spin on the Battleships game. 🚢
 
 ## Technologies
 
-- Phoenix Framework ver 1.7
-- TailwindCSS
+- Phoenix Framework 1.7
+- TailwindCSS 
 
 ## Running app locally
 
@@ -26,10 +26,14 @@ To start your Phoenix server:
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 
-### Possible improvements :
+## Possible improvements :
 
-- improve UI feedback
-- develop a mechanism responsible for flash message clean up
-- design a system that will prevent users from opening more than 1 tab; current app implementation removes the player from game and chat when closing one of concurrent app tabs
-- add favicon
+- [ ] improve UI feedback
+    - [X] ~~*when placing ships, draw ship's class and position on hover*~~
+    - [ ] reduce ships that can be drawn by those already placed
+    - [ ] change "miss", "hit" and "sunk" responses after shooting to something more aesthetic
+    - [ ] [optional] display opponent's mouse cursor on player's boards, when it's opponent's turn
+- [X] ~~*develop a mechanism responsible for flash message clean up*~~
+- [ ] design a system that will prevent users from opening more than 1 tab; current app implementation removes the player from game and chat when closing one of concurrent app tabs
+- [X] ~~*add a favicon*~~ 
 
