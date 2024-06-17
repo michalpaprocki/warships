@@ -119,7 +119,7 @@ module.exports = {
           boxShadow: "inset 0rem 0rem 0rem var(--alert_color)" 
         },
         "50%": {  
-          boxShadow: "inset 0rem 0rem 0.25rem black" 
+          boxShadow: "inset 0rem 0rem 0.5rem black" 
         }, 
       },
       traverse_y :{
