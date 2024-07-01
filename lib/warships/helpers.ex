@@ -23,22 +23,24 @@ def gen_horizontal_ship_cords_(first_coord, last_coord, x) do
 end
 
 
-defp gen_adjecent_tiles_list(list_of_coords) do
-
-  list_unfiltered = List.flatten(Enum.map(list_of_coords.coords, fn x -> gen_adjacent_tiles(x) end))
-  Enum.uniq(Enum.filter(list_unfiltered, fn x -> !Enum.member?(list_of_coords.coords, x) end))
-
+def gen_adjecent_tiles_list(map_of_coords) when is_map(map_of_coords) do
+  list_unfiltered = List.flatten(Enum.map(map_of_coords.coords, fn x -> gen_adjacent_tiles(x) end))
+  Enum.uniq(Enum.filter(list_unfiltered, fn x -> !Enum.member?(map_of_coords.coords, x) end))
 end
 
-defp gen_adjacent_tiles(tuple) do
+def gen_adjecent_tiles_list(list_of_coords) when is_list(list_of_coords) do
+  list_unfiltered = List.flatten(Enum.map(list_of_coords, fn x -> gen_adjacent_tiles(x) end))
+  Enum.uniq(Enum.filter(list_unfiltered, fn x -> !Enum.member?(list_of_coords, x) end))
+end
+def gen_adjacent_tiles(tuple) do
 
-x = elem(tuple, 0)
-y = String.to_integer(elem(tuple, 1))
-x_code_point = hd(String.to_charlist(x))
-x_range_unfiltered = Enum.map(x_code_point-1..x_code_point+1 , fn x -> <<x :: utf8>> end)
-x_range = Enum.filter(x_range_unfiltered, fn x -> String.match?(x, ~r/[a-z]/) end)
-y_range = Enum.filter(Enum.to_list(y-1..y+1), fn x -> Enum.member?(Enum.to_list(0..9), x)end)
-Enum.map(x_range, fn x-> Enum.map(y_range, fn y -> {x, to_string(y)}end) end)
+  x = elem(tuple, 0)
+  y = String.to_integer(elem(tuple, 1))
+  x_code_point = hd(String.to_charlist(x))
+    x_range_unfiltered = Enum.map(x_code_point-1..x_code_point+1 , fn x -> <<x :: utf8>> end)
+    x_range = Enum.filter(x_range_unfiltered, fn x -> String.match?(x, ~r/[a-z]/) end)
+    y_range = Enum.filter(Enum.to_list(y-1..y+1), fn x -> Enum.member?(Enum.to_list(0..9), x)end)
+    Enum.map(x_range, fn x-> Enum.map(y_range, fn y -> {x, to_string(y)}end) end)
 
 end
 

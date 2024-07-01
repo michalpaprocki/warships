@@ -131,6 +131,11 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
     Warships.GameStore.request_another(socket.assigns.game.game, socket.assigns.nickname)
     {:noreply, socket}
   end
+  def handle_event("play_cpu", _unsigned_params, socket) do
+
+      GameStore.add_player(socket.assigns.game.game, "CPU")
+    {:noreply, socket}
+  end
   def handle_event("leave", _unsigned_params, socket) do
 
     Warships.GameStore.remove_player(socket.assigns.game.game, socket.assigns.nickname)
@@ -153,7 +158,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
   end
   def handle_event("logout", _unsigned_params, socket) do
     ChatStore.remove_chat_member(:CS_lobby, socket.assigns.nickname)
-    {:noreply, socket |> assign(:nickname, nil) |>redirect(to: ~p"/logout")}
+    {:noreply, socket |> assign(:nickname, nil) |> redirect(to: ~p"/logout")}
   end
   def handle_info({:update_flash, {flash_type, msg}}, socket) do
 

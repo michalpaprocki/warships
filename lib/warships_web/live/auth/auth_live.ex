@@ -28,7 +28,7 @@ defmodule WarshipsWeb.Auth.AuthLive do
   end
   def handle_event("logout", _unsigned_params, socket) do
     ChatStore.remove_chat_member(:CS_lobby, socket.assigns.nickname)
-    {:noreply, socket |> assign(:nickname, nil) |>redirect(to: ~p"/logout")}
+    {:noreply, socket |> assign(:nickname, nil) |> redirect(to: ~p"/logout")}
   end
   def handle_event("save", %{"password" => params}, socket) do
     auth_state = RoomStore.verify_password(socket.assigns.room_name, params["password"])

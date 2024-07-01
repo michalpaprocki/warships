@@ -16,7 +16,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
         adjacent = Helpers.gen_adjacent_from_ship_map(player_ships)
 
-        {:ok, socket|> assign(:hover_coords, %{"x"=>"", "y"=> ""}) |> assign(:phase, :first)|> assign(:adjacent, adjacent) |> assign(:ships_on_board, player_ships)|> assign(:selected_coords, {"", ""}) |> assign(assigns)|> assign_new(:x_range, fn  -> Helpers.generate_x_board() end)|> assign_new(:y_range,fn  -> Helpers.generate_y_board() end )}
+        {:ok, socket|> assign(:hover_coords, %{"x"=>"", "y"=> ""}) |> assign(:phase, :first)|> assign(:adjacent, adjacent) |> assign(:ships_on_board, player_ships)|> assign(:selected_coords, {"", ""}) |> assign(assigns)|> assign_new(:x_range, fn  -> Helpers.generate_x_board() end)|> assign_new(:y_range,fn  -> Helpers.generate_y_board()end )}
     end
 
   end
@@ -24,7 +24,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
   def handle_event("select_start", %{"x" => x , "y" => y}, socket) do
 
 
-    {:noreply, socket |> assign(:phase, :second)|> assign(:selected_coords, {x,y})}
+    {:noreply, socket |> assign(:phase, :second)|> assign(:selected_coords, {x,y})  |> IO.inspect() }
   end
   def handle_event("select_end", %{"x" => x , "y" => y}, socket) do
     cond do
