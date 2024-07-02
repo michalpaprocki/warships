@@ -1,7 +1,7 @@
 defmodule Warships.ShipStore do
   alias Warships.CoordsGenStore
   alias Warships.Helpers
-  alias Warships.StoreRegistry
+  alias Warships.AppRegistry
 
   @moduledoc """
   A store for ships coords.
@@ -9,12 +9,12 @@ defmodule Warships.ShipStore do
 
   def start_link(store_name) do
     GenServer.start_link(__MODULE__, store_name,
-      name: StoreRegistry.using_via("ShipStore: " <> store_name)
+      name: AppRegistry.using_via("ShipStore: " <> store_name)
     )
   end
 
   def stop_link(store_name) do
-    GenServer.call(StoreRegistry.using_via("ShipStore: " <> store_name), {:suicide})
+    GenServer.call(AppRegistry.using_via("ShipStore: " <> store_name), {:suicide})
   end
 
   def init(init_arg) do
@@ -25,38 +25,38 @@ defmodule Warships.ShipStore do
 
   def add_player(server, name) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:add_player, %{:name => name}}
     )
   end
 
   def remove_player(server, name) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:remove_player, %{:name => name}}
     )
   end
 
   def get_player_ships(server, player) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:get_player_ships, %{:player => player}}
     )
   end
 
   def get_store(server) do
-    GenServer.call(StoreRegistry.using_via("ShipStore: " <> server), {:get_store})
+    GenServer.call(AppRegistry.using_via("ShipStore: " <> server), {:get_store})
   end
 
   def randomize_ship_placement(server, player) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:randomize, %{:player => player}}
     )
   end
 
   def ping(server) do
-    GenServer.call(StoreRegistry.using_via("ShipStore: " <> server), {:ping})
+    GenServer.call(AppRegistry.using_via("ShipStore: " <> server), {:ping})
   end
 
   @doc """
@@ -64,7 +64,7 @@ defmodule Warships.ShipStore do
   """
   def add_ship(server, player, class, ship) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:add_ship, %{:player => player, :class => class, :ship => ship}}
     )
   end
@@ -74,7 +74,7 @@ defmodule Warships.ShipStore do
   """
   def remove_ship(server, player, class, sid) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:remove_ship, %{:player => player, :class => class, :sid => sid}}
     )
   end
@@ -84,7 +84,7 @@ defmodule Warships.ShipStore do
   """
   def check_if_ship_hit(server, target_player, coords) do
     GenServer.call(
-      StoreRegistry.using_via("ShipStore: " <> server),
+      AppRegistry.using_via("ShipStore: " <> server),
       {:check_if_ship_hit, %{:target_player => target_player, :coords => coords}}
     )
   end

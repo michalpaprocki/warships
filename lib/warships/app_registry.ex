@@ -1,4 +1,4 @@
-defmodule Warships.StoreRegistry do
+defmodule Warships.AppRegistry do
 
   def start_link() do
     Registry.start_link(keys: :unique, name: __MODULE__)

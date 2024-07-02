@@ -2,18 +2,18 @@ defmodule Warships.GameStore do
   alias Warships.RefStore
   alias Warships.RoomStore
   alias Warships.ShipStore
-  alias Warships.StoreRegistry
+  alias Warships.AppRegistry
   use GenServer
 
   def start_link(store_name) do
 
-   GenServer.start_link(__MODULE__, store_name, name: StoreRegistry.using_via("GameStore: "<>store_name))
+   GenServer.start_link(__MODULE__, store_name, name: AppRegistry.using_via("GameStore: "<>store_name))
 
   end
 
   def stop_link(server) do
 
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:suicide})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:suicide})
   end
 
   def init(init_arg) do
@@ -22,16 +22,16 @@ defmodule Warships.GameStore do
   end
 
   def change_game_state(server, state) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:change_game_state, %{:state => state}})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:change_game_state, %{:state => state}})
   end
   def restart(server) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:restart})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:restart})
   end
   def request_another(server, player) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:request_rematch, %{:player => player}})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:request_rematch, %{:player => player}})
   end
   def accept_rematch(server) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:accept_rematch})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:accept_rematch})
   end
 
   @doc """
@@ -41,7 +41,7 @@ defmodule Warships.GameStore do
 
   """
   def add_player(server, name) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:add_player, %{:name => name}})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:add_player, %{:name => name}})
   end
 
   @doc """
@@ -51,23 +51,23 @@ defmodule Warships.GameStore do
 
   """
   def remove_player(server, name) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:remove_player, %{:name => name}})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:remove_player, %{:name => name}})
   end
   def toggle_ready(server, player) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:toggle_ready, %{:player=>player}})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:toggle_ready, %{:player=>player}})
   end
   def get_store(server) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_store})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:get_store})
   end
 
   def shoot(server, shooter, coords) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:shoot, %{:shooter => shooter, :coords => coords}})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:shoot, %{:shooter => shooter, :coords => coords}})
   end
   def get_players(server) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_players})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:get_players})
   end
   def get_player_count(server) do
-    GenServer.call(StoreRegistry.using_via("GameStore: "<>server), {:get_player_count})
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:get_player_count})
   end
 
 

@@ -14,7 +14,7 @@ defmodule Warships.Application do
       Warships.ChatStore,
       Warships.RoomSupervisor,
       Warships.LiveMonitor,
-      Warships.StoreRegistry,
+      Warships.AppRegistry,
       Warships.RefStore,
       # Warships.Repo,
       {DNSCluster, query: Application.get_env(:warships, :dns_cluster_query) || :ignore},
