@@ -165,7 +165,11 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
           {:noreply, socket  |>assign(:phase, :first)}
         end
   end
+  def handle_event("randomize_coords", _unsigned_params, socket) do
+    ShipStore.randomize_ship_placement(socket.assigns.game.game, socket.assigns.nickname)
 
+    {:noreply, socket }
+  end
   def handle_event("cancel_placement", %{"x" => x , "y" => y, "class" => class}, socket) do
     player_data = Map.get(socket.assigns.game.players, socket.assigns.nickname)
 

@@ -75,6 +75,7 @@ defmodule Warships.GameStore do
 
 
   def handle_call({:add_player, params}, _from, state) do
+    IO.inspect(params.name)
     cond do
       Map.has_key?(state.players, params.name) ->
 
@@ -94,7 +95,7 @@ defmodule Warships.GameStore do
             Map.put(state.players,params.name, %{
               :ships_hit => %{},
               :shots_coords => [],
-              :ready => false
+              :ready => player_cpu?(state.game, params.name)
             })
 
           new_state_ = Map.put(state, :players, new_players_)
@@ -192,12 +193,10 @@ defmodule Warships.GameStore do
 
     {:reply, new_state, new_state}
   end
-
   def handle_call({:suicide}, _from, state) do
 
     {:stop, :normal, :kaput, state}
   end
-
   def handle_call({:shoot, params}, _from, state) do
 
     data = Map.get(state.players, params.shooter)
@@ -339,6 +338,15 @@ defmodule Warships.GameStore do
       #{"GS_"<>state.game} and #{"SS_"<>state.game} terminating due to inactivity...
     """)
     {:noreply, state}
+  end
+
+  defp player_cpu?(game, name) do
+    if name == "CPU" do
+      ShipStore.randomize_ship_placement(game, name)
+      true
+    else
+      false
+    end
   end
 
   defp begin_termination_process(pid) do

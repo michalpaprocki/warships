@@ -245,7 +245,10 @@ defmodule Warships.ShipStore do
     new_map_of_ships = Map.replace(state.players[params.player], :map_of_ships, map)
     new_player = Map.replace(state.players, params.player, new_map_of_ships)
     new_state = Map.replace(state, :players, new_player)
-
+    WarshipsWeb.Endpoint.broadcast("game", "ship_added", %{
+      :player => params.player,
+      :state => Map.get(new_state.players, params.player, [])
+    })
     {:reply, :random, new_state}
   end
 

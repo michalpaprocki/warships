@@ -31,7 +31,7 @@
                         <span><%= length(Map.to_list(v.ships)) %> / <%= v.max %>  </span>
                     </div>
                 <% end %>
-            <div class="p-4 ">
+            <div class="p-4">
                 <%= cond do %>
                     <% elem(Enum.at(Enum.filter(@game.players, fn {k,_v} -> k == @nickname end), 0), 1).ready -> %>
                         <button phx-click="toggle_ready" phx-target={@myself} class="w-[10ch] bg-black text-white bg-stripes bg-1x1 hover:text-white hover:ring-2 hover:ring-black hover:scale-105 transition p-2 rounded-sm  uppercase font-semibold bg-center hover:animate-roll_right">cancel</button>
@@ -43,8 +43,11 @@
                     <% true -> %>
 
                         <button disabled class="w-[10ch] p-2 bg-black/50 text-white uppercase font-semibold rounded-sm">Ready</button>
-                <% end %>
-        
+                        <% end %>
+                        
+                    </div>
+            <div class="p-4">
+                <button phx-click="randomize_coords" phx-target={@myself}  class="w-[10ch] bg-black text-white hover:bg-white hover:text-black hover:ring-2 hover:ring-black hover:scale-105 transition p-2 rounded-sm  uppercase font-semibold">Random</button>
             </div>
         </div>
         <div class="font-semibold capitalize p-1 px-4 flex flex-col gap-5">

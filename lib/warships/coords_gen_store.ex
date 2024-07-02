@@ -44,22 +44,15 @@ alias Warships.Helpers
     {:reply, state.coords, state}
   end
   def handle_call({:reduce, list}, _from, state) do
-    # IO.puts("""
-    # list of coords to reduce:
-    # #{inspect(list)}
 
-    # """)
+
     new_coords = Enum.filter(state.coords, fn x-> !Enum.member?(List.flatten(list), x) end)
     new_state  = Map.replace(state, :coords, new_coords)
-    # IO.puts("""
-    # list of coords reduced:
-    # #{inspect(length(new_coords))}
 
-    # """)
     {:reply, new_state, new_state }
   end
   def handle_call({:save_len, len}, _from, state) do
-   new_state = Map.replace(state, :current_len, len)
+     new_state = Map.replace(state, :current_len, len)
     {:reply, :ok, new_state}
   end
   def handle_call({:get_len}, _from, state) do
