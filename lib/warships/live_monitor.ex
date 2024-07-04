@@ -62,6 +62,7 @@ Handles socket disconnections from `LiveView` modules.
           new_state = Map.delete(state.views, pid)
           {:noreply, %{state | views: new_state}}
         else
+          GameStore.remove_player(server, "CPU")
           GameStore.remove_player(server, nickname)
           new_state = Map.delete(state.views, pid)
           {:noreply, %{state | views: new_state}}
@@ -77,6 +78,7 @@ Handles socket disconnections from `LiveView` modules.
           ChatStore.remove_chat_member(:CS_lobby, nickname)
           {:noreply, %{state | views: new_state}}
         else
+          GameStore.remove_player(server, "CPU")
           GameStore.remove_player(server, nickname)
           new_state = Map.delete(state.views, pid)
           ChatStore.remove_chat_member(:CS_lobby, nickname)
@@ -91,6 +93,7 @@ Handles socket disconnections from `LiveView` modules.
           ChatStore.remove_chat_member(:CS_lobby, nickname)
           {:noreply, %{state | views: new_state}}
         else
+          GameStore.remove_player(server, "CPU")
           GameStore.remove_player(server, nickname)
           new_state = Map.delete(state.views, pid)
           ChatStore.remove_chat_member(:CS_lobby, nickname)

@@ -24,7 +24,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
   def handle_event("select_start", %{"x" => x , "y" => y}, socket) do
 
 
-    {:noreply, socket |> assign(:phase, :second)|> assign(:selected_coords, {x,y})  |> IO.inspect() }
+    {:noreply, socket |> assign(:phase, :second)|> assign(:selected_coords, {x,y})}
   end
   def handle_event("select_end", %{"x" => x , "y" => y}, socket) do
     cond do

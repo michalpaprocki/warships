@@ -13,4 +13,7 @@ defmodule Warships.AppRegistry do
       start: {__MODULE__, :start_link, []}
     )
   end
+  def lookup(name) do
+  elem(hd(Registry.lookup(__MODULE__, name)), 0)
+  end
 end

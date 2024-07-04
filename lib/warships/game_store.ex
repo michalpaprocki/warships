@@ -1,4 +1,5 @@
 defmodule Warships.GameStore do
+  alias Warships.CPUPlayer
   alias Warships.RefStore
   alias Warships.RoomStore
   alias Warships.ShipStore
@@ -21,9 +22,6 @@ defmodule Warships.GameStore do
     {:ok, %{:game => init_arg, :turn => "unset", :state => :awaiting_players, :winner => "", :players => %{}, :rematch =>%{:challenger=> :none, :request=> false}}}
   end
 
-  def change_game_state(server, state) do
-    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:change_game_state, %{:state => state}})
-  end
   def restart(server) do
     GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:restart})
   end
@@ -33,6 +31,7 @@ defmodule Warships.GameStore do
   def accept_rematch(server) do
     GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:accept_rematch})
   end
+
 
   @doc """
     server: string
@@ -75,7 +74,7 @@ defmodule Warships.GameStore do
 
 
   def handle_call({:add_player, params}, _from, state) do
-    IO.inspect(params.name)
+
     cond do
       Map.has_key?(state.players, params.name) ->
 
@@ -88,7 +87,6 @@ defmodule Warships.GameStore do
 
             {:reply, {:error, :room_is_full}, state}
           _ ->
-
 
           ShipStore.add_player(state.game, params.name)
           new_players_ =
@@ -127,6 +125,9 @@ defmodule Warships.GameStore do
     players = Enum.map(state.players, fn x-> elem(x,0) end)
 
     for p <- players do
+      if p == "CPU" do
+        CPUPlayer.stop_link(state.game)
+      end
       ShipStore.remove_player(state.game, p)
       if p != params.name do
         ShipStore.add_player(state.game, p)
@@ -168,6 +169,7 @@ defmodule Warships.GameStore do
       elem(Enum.at(new_state.players, 0), 1).ready && elem(Enum.at(new_state.players, 1), 1).ready ->
         new_state_updated = Map.put(new_state, :state, :game)
         WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state_updated)
+        send_to_cpu_player(state, %{:turn=>state.turn})
         {:reply, :ok, new_state_updated}
         true ->
           WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
@@ -186,13 +188,7 @@ defmodule Warships.GameStore do
     player_count = length(Map.to_list(state.players))
     {:reply, player_count, state}
   end
-  def handle_call({:change_game_state, params}, _from, state) do
-    new_state = Map.replace(state, :state, params.state)
 
-    WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
-
-    {:reply, new_state, new_state}
-  end
   def handle_call({:suicide}, _from, state) do
 
     {:stop, :normal, :kaput, state}
@@ -209,18 +205,23 @@ defmodule Warships.GameStore do
     case shot do
       {:miss, coords} ->
 
+        if params.shooter == "CPU" do
+          send_to_cpu_player(state, %{:result => :miss, :coords => coords })
+        end
 
         shots_fired_ = [coords | Map.get(data, :shots_coords)]
-
         new_data_ = Map.replace(data, :shots_coords, shots_fired_)
-
         new_players_data_ = Map.replace(state.players, params.shooter, new_data_)
         next_turn = Map.replace(state, :turn, target)
-        new_state_ = Map.replace(next_turn, :players, new_players_data_)
-        WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state_)
-        {:reply, :ok, new_state_}
+        new_state = Map.replace(next_turn, :players, new_players_data_)
+        WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+        send_to_cpu_player(state, %{:turn => target})
+        {:reply, :ok, new_state}
 
       {:hit, id, coords} ->
+        if params.shooter == "CPU" do
+          send_to_cpu_player(state, %{:result => :hit ,:coords => coords })
+        end
         case  Enum.filter(Map.to_list(data.ships_hit), fn a -> elem(a,0) == id end) do
 
           []->
@@ -231,6 +232,7 @@ defmodule Warships.GameStore do
             next_turn = Map.replace(state, :turn, target)
             new_state = Map.replace(next_turn, :players, new_players)
             WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+            send_to_cpu_player(state, %{:turn => target})
             {:reply, :ok, new_state}
 
           filtered_ships_hit->
@@ -243,14 +245,17 @@ defmodule Warships.GameStore do
             next_turn = Map.replace(state, :turn, target)
             new_state = Map.replace(next_turn, :players, new_players)
             WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
-
+            send_to_cpu_player(state, %{:turn => target})
             {:reply, :ok, new_state}
         end
 
       {:sunk, id, coords} ->
-
+        if params.shooter == "CPU" do
+          send_to_cpu_player(state, %{:result => :sunk ,:coords => coords })
+        end
           case Enum.filter(Map.to_list(data.ships_hit), fn a -> elem(a,0) == id end) do
             [] ->
+
               new_map = Map.put(data.ships_hit, id, {:sunk, [coords]})
               ships_hit_u = Map.replace(data, :ships_hit, new_map)
               new_players = Map.replace(state.players, params.shooter, ships_hit_u)
@@ -263,11 +268,13 @@ defmodule Warships.GameStore do
                   next_turn |> Map.replace(:winner, params.shooter) |> Map.replace(:state, :game_over)
                   new_state = Map.replace(state_change, :players, new_players)
                   WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+                  send_to_cpu_player(state, :reset)
               {:reply, :ok, new_state}
 
                 false ->
                   new_state = Map.replace(next_turn, :players, new_players)
                   WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+                  send_to_cpu_player(state, %{:turn => target})
               {:reply, :ok, new_state}
               end
 
@@ -286,11 +293,13 @@ defmodule Warships.GameStore do
                   next_turn |> Map.replace(:winner, params.shooter) |> Map.replace(:state, :game_over)
                   new_state = Map.replace(state_change, :players, new_players)
                   WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+                  send_to_cpu_player(state, :reset)
               {:reply, :ok, new_state}
 
                 false ->
                   new_state = Map.replace(next_turn, :players, new_players)
                   WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+                  send_to_cpu_player(state, %{:turn => target})
               {:reply, :ok, new_state}
               end
 
@@ -305,30 +314,23 @@ defmodule Warships.GameStore do
     {:reply, :ok, new_state}
   end
   def handle_call({:request_rematch, params}, _from, state) do
-    rematch = %{:challenger=> params.player, :request => true}
-    new_state = Map.replace(state, :rematch, rematch)
-    WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
-    {:reply, :ok, new_state}
+    if Enum.member?(Map.keys(state.players), "CPU") do
+        new_state = reset_game(state)
+        CPUPlayer.reset_CPU_player(state.game)
+
+      {:reply, :ok, new_state}
+    else
+      rematch = %{:challenger=> params.player, :request => true}
+      new_state = Map.replace(state, :rematch, rematch)
+      WarshipsWeb.Endpoint.broadcast("game", "game_state_update", new_state)
+      {:reply, :ok, new_state}
+    end
   end
   def handle_call({:accept_rematch}, _from, state) do
-    players = Enum.map(state.players, fn x-> elem(x,0) end)
-    for p <- players do
-      ShipStore.remove_player(state.game, p)
-      ShipStore.add_player(state.game, p)
-    end
-
-    players_list = Enum.map(players, fn x -> Map.put(%{}, x, %{
-    :ships_hit => %{},
-    :shots_coords => [],
-    :ready => false}) end)
-
-    players_map = Enum.reduce(players_list, fn x, y -> Map.merge(x,y) end)
-
-    new_state = %{:game => state.game, :turn => Enum.at(Enum.filter(players, fn x-> x != state.winner end), 0), :state => :prep, :winner => "", :players => players_map , :rematch =>%{:challenger=> :none, :request=> false}}
-
-    WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
+   new_state = reset_game(state)
     {:reply, :ok, new_state}
   end
+
 
 
   def handle_info(:timeout, state) do
@@ -343,12 +345,22 @@ defmodule Warships.GameStore do
   defp player_cpu?(game, name) do
     if name == "CPU" do
       ShipStore.randomize_ship_placement(game, name)
+      CPUPlayer.start_link(game)
+
       true
     else
       false
     end
   end
+  defp send_to_cpu_player(state, msg) do
+    case Enum.member?(Map.keys(state.players), "CPU") do
+      true ->
+        Process.send(Warships.AppRegistry.lookup("CPU_player: "<>state.game) , msg, [])
+      false ->
+        nil
+    end
 
+  end
   defp begin_termination_process(pid) do
     ref = Process.send_after(pid, :timeout, 10 * 60 * 1000)
     RefStore.add_ref(pid, ref)
@@ -364,5 +376,26 @@ defmodule Warships.GameStore do
 
   defp check_if_all_ships_sunken?(map_of_hit_ships, amount_of_ships) do
     length(Enum.map(map_of_hit_ships, fn x -> x end)) == amount_of_ships  && !Enum.member?(Enum.map(map_of_hit_ships, fn x -> elem(elem(x,1),0) end), :hit)
+  end
+  defp reset_game(state) do
+    players = Enum.map(state.players, fn x-> elem(x,0) end)
+    for p <- players do
+      ShipStore.remove_player(state.game, p)
+      ShipStore.add_player(state.game, p)
+    end
+
+    players_list = Enum.map(players, fn x -> Map.put(%{
+
+    }, x, %{
+    :ships_hit => %{},
+    :shots_coords => [],
+    :ready => player_cpu?(state.game, x)}) end)
+
+    players_map = Enum.reduce(players_list, fn x, y -> Map.merge(x,y) end)
+
+    new_state = %{:game => state.game, :turn => Enum.at(Enum.filter(players, fn x-> x != state.winner end), 0), :state => :prep, :winner => "", :players => players_map , :rematch =>%{:challenger=> :none, :request=> false}}
+
+    WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
+    new_state
   end
 end

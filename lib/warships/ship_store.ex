@@ -240,7 +240,7 @@ defmodule Warships.ShipStore do
   end
 
   def handle_call({:randomize, params}, _from, state) do
-    map_of_ships = gen_ship_coords(state.players[params.player].map_of_ships)
+    map_of_ships = gen_ship_coords(state.game, state.players[params.player].map_of_ships)
     map = push_ships(map_of_ships, %{})
     new_map_of_ships = Map.replace(state.players[params.player], :map_of_ships, map)
     new_player = Map.replace(state.players, params.player, new_map_of_ships)
@@ -296,19 +296,19 @@ defmodule Warships.ShipStore do
   defp check_if_class_in_range?(ship_class),
     do: String.match?(Enum.at(String.graphemes(ship_class), 1), ~r/[1-4]/)
 
-  defp gen_ship_coords(map_of_ships) do
-    CoordsGenStore.start()
+  defp gen_ship_coords(game, map_of_ships) do
+    CoordsGenStore.start(game)
 
     map_of_ships =
       Enum.map(Enum.reverse(Map.to_list(map_of_ships)), fn {k, v} ->
-        gen_class(k, v.max)
+        gen_class(game, k, v.max)
       end)
 
-    CoordsGenStore.stop()
+    CoordsGenStore.stop(game)
     map_of_ships
   end
 
-  defp gen_class(class, amount) do
+  defp gen_class(game, class, amount) do
     map = %{
       class => %{
         :max => amount,
@@ -320,7 +320,7 @@ defmodule Warships.ShipStore do
     list_of_tuples =
       for _n <- Range.to_list(1..amount) do
         {Atom.to_string(class) <> "_" <> Integer.to_string(:os.system_time()),
-         %{:coords => gen_ships(class), :hits => 0}}
+         %{:coords => gen_ships(game, class), :hits => 0}}
       end
 
     new_ships = put_in_map(map[class].ships, list_of_tuples)
@@ -351,41 +351,41 @@ defmodule Warships.ShipStore do
         push_ships(List.delete_at(list_of_ship_maps, 0), new_map)
     end
   end
-  defp gen_ships(class) do
+  defp gen_ships(game, class) do
     case class do
       :m4 ->
-        gen_coords(4, [])
+        gen_coords(game, 4, [])
 
       :m3 ->
-        gen_coords(3, [])
+        gen_coords(game, 3, [])
 
       :m2 ->
-        gen_coords(2, [])
+        gen_coords(game, 2, [])
 
       _ ->
-        gen_coords(1, [])
+        gen_coords(game, 1, [])
     end
   end
 
-  def gen_coords(length, init_value) do
+  def gen_coords(game, length, init_value) do
     case length do
       1 ->
-        new_coords = [Enum.random(CoordsGenStore.get_coords()) | init_value]
-        CoordsGenStore.reduce(Enum.map(new_coords, fn x -> Helpers.gen_adjacent_tiles(x) end))
+        new_coords = [Enum.random(CoordsGenStore.get_coords(game)) | init_value]
+        CoordsGenStore.reduce(game, Enum.map(new_coords, fn x -> Helpers.gen_adjacent_tiles(x) end))
         #  prep sid
         new_coords
 
       x ->
-        coords = CoordsGenStore.get_coords()
+        coords = CoordsGenStore.get_coords(game)
         random_coord = Enum.random(coords)
-        CoordsGenStore.save_len(x - 1)
-        new_coords = grow_coords([random_coord], Enum.random(0..3), x - 1, init_value)
-        CoordsGenStore.reduce(Helpers.gen_adjecent_tiles_list(new_coords))
+        CoordsGenStore.save_len(game, x - 1)
+        new_coords = grow_coords(game, [random_coord], Enum.random(0..3), x - 1, init_value)
+        CoordsGenStore.reduce(game, Helpers.gen_adjacent_tiles_list(new_coords))
         new_coords
     end
   end
 
-  defp grow_coords(coords, dir, len, _init) do
+  defp grow_coords(game, coords, dir, len, _init) do
     case dir do
       0 ->
         new_coords =
@@ -400,13 +400,13 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(), x) end),
+                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
                  true
                ) do
-              grow_coords(
-                [Enum.random(CoordsGenStore.get_coords())],
+              grow_coords(game,
+                [Enum.random(CoordsGenStore.get_coords(game))],
                 dir,
-                CoordsGenStore.get_len(),
+                CoordsGenStore.get_len(game),
                 []
               )
             else
@@ -414,7 +414,7 @@ defmodule Warships.ShipStore do
             end
 
           x ->
-            grow_coords(new_coords, dir, x - 1, new_coords)
+            grow_coords(game, new_coords, dir, x - 1, new_coords)
         end
 
       1 ->
@@ -430,13 +430,14 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(), x) end),
+                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
                  true
                ) do
               grow_coords(
-                [Enum.random(CoordsGenStore.get_coords())],
+                game,
+                [Enum.random(CoordsGenStore.get_coords(game))],
                 dir,
-                CoordsGenStore.get_len(),
+                CoordsGenStore.get_len(game),
                 []
               )
             else
@@ -444,7 +445,7 @@ defmodule Warships.ShipStore do
             end
 
           x ->
-            grow_coords(new_coords, dir, x - 1, new_coords)
+            grow_coords(game, new_coords, dir, x - 1, new_coords)
         end
 
       2 ->
@@ -460,13 +461,14 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(), x) end),
+                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
                  true
                ) do
               grow_coords(
-                [Enum.random(CoordsGenStore.get_coords())],
+                game,
+                [Enum.random(CoordsGenStore.get_coords(game))],
                 dir,
-                CoordsGenStore.get_len(),
+                CoordsGenStore.get_len(game),
                 []
               )
             else
@@ -474,7 +476,7 @@ defmodule Warships.ShipStore do
             end
 
           x ->
-            grow_coords(new_coords, dir, x - 1, new_coords)
+            grow_coords(game, new_coords, dir, x - 1, new_coords)
         end
 
       3 ->
@@ -490,13 +492,14 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(), x) end),
+                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
                  true
                ) do
               grow_coords(
-                [Enum.random(CoordsGenStore.get_coords())],
+                game,
+                [Enum.random(CoordsGenStore.get_coords(game))],
                 dir,
-                CoordsGenStore.get_len(),
+                CoordsGenStore.get_len(game),
                 []
               )
             else
@@ -504,7 +507,7 @@ defmodule Warships.ShipStore do
             end
 
           x ->
-            grow_coords(new_coords, dir, x - 1, new_coords)
+            grow_coords(game, new_coords, dir, x - 1, new_coords)
         end
     end
   end

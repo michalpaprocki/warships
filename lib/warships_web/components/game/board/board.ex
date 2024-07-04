@@ -4,17 +4,10 @@ defmodule WarshipsWeb.Game.Board.Board do
   use Phoenix.LiveComponent
   def update(assigns, socket) do
 
-
     my_ships = ShipStore.get_player_ships(assigns.game.game, assigns.nickname)
 
-    {:ok, socket |> assign(assigns)|> assign_new(:x_range, fn  -> generate_x_board() end)|> assign_new(:y_range,fn  -> generate_y_board() end ) |> assign(:my_ships, my_ships)|> assign_new(:panel, fn ->"both"end)}
-  end
-  def handle_event("give_turn", _unsigned_params, socket) do
-    nickname =
-      Map.filter(socket.assigns.game.players, fn p -> elem(p, 0) == socket.assigns.nickname end)
 
-    GameStore.change_game_state(socket.assigns.game.game, List.first(Map.keys(nickname)))
-    {:noreply, socket}
+    {:ok, socket |> assign(assigns)|> assign_new(:x_range, fn  -> generate_x_board() end)|> assign_new(:y_range,fn  -> generate_y_board() end ) |> assign(:my_ships, my_ships)|> assign_new(:panel, fn ->"both"end)}
   end
 
   def handle_event("shoot", %{"x"=> x, "y"=> y}, socket) do

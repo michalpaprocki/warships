@@ -23,14 +23,14 @@ def gen_horizontal_ship_cords_(first_coord, last_coord, x) do
 end
 
 
-def gen_adjecent_tiles_list(map_of_coords) when is_map(map_of_coords) do
+def gen_adjacent_tiles_list(map_of_coords) when is_map(map_of_coords) do
   list_unfiltered = List.flatten(Enum.map(map_of_coords.coords, fn x -> gen_adjacent_tiles(x) end))
   Enum.uniq(Enum.filter(list_unfiltered, fn x -> !Enum.member?(map_of_coords.coords, x) end))
 end
 
-def gen_adjecent_tiles_list(list_of_coords) when is_list(list_of_coords) do
+def gen_adjacent_tiles_list(list_of_coords) when is_list(list_of_coords) do
   list_unfiltered = List.flatten(Enum.map(list_of_coords, fn x -> gen_adjacent_tiles(x) end))
-  Enum.uniq(Enum.filter(list_unfiltered, fn x -> !Enum.member?(list_of_coords, x) end))
+  Enum.uniq(list_unfiltered)
 end
 def gen_adjacent_tiles(tuple) do
 
@@ -49,10 +49,10 @@ def gen_adjacent_from_ship_map(ship_map) do
 adjacent = %{:m1=> %{},:m2=> %{},:m3=> %{},:m4=> %{}}
 
 
-adj_m1 = Map.new(Enum.map(ship_map.m1.ships, fn {k,v} -> {k, gen_adjecent_tiles_list(v)} end))
-adj_m2 = Map.new(Enum.map(ship_map.m2.ships, fn {k,v} -> {k, gen_adjecent_tiles_list(v)} end))
-adj_m3 = Map.new(Enum.map(ship_map.m3.ships, fn {k,v} -> {k, gen_adjecent_tiles_list(v)} end))
-adj_m4 = Map.new(Enum.map(ship_map.m4.ships, fn {k,v} -> {k, gen_adjecent_tiles_list(v)} end))
+adj_m1 = Map.new(Enum.map(ship_map.m1.ships, fn {k,v} -> {k, gen_adjacent_tiles_list(v)} end))
+adj_m2 = Map.new(Enum.map(ship_map.m2.ships, fn {k,v} -> {k, gen_adjacent_tiles_list(v)} end))
+adj_m3 = Map.new(Enum.map(ship_map.m3.ships, fn {k,v} -> {k, gen_adjacent_tiles_list(v)} end))
+adj_m4 = Map.new(Enum.map(ship_map.m4.ships, fn {k,v} -> {k, gen_adjacent_tiles_list(v)} end))
 
 adjacent |> Map.replace(:m1, adj_m1) |> Map.replace(:m2, adj_m2) |>Map.replace(:m3, adj_m3) |> Map.replace(:m4, adj_m4)
 
