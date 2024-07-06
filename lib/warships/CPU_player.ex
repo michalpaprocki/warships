@@ -8,8 +8,8 @@ defmodule Warships.CPUPlayer do
 
 
 
-  def start_link(game_name) do
-    GenServer.start_link(__MODULE__, game_name, name: AppRegistry.using_via("CPU_player: "<>game_name))
+  def start_link(game_name, cpu_name) do
+    GenServer.start_link(__MODULE__, %{:game_name => game_name, :cpu_name => cpu_name}, name: AppRegistry.using_via("CPU_player: "<>game_name))
    end
 
   def stop_link(game_name) do
@@ -18,13 +18,16 @@ defmodule Warships.CPUPlayer do
   end
 
   def init(init_arg) do
-    CoordsGenStore.start(init_arg<>" CPU_coords")
-    IO.puts("Starting #{"CPU_player: "<> init_arg}")
+    CoordsGenStore.start(init_arg.game_name<>" CPU_coords")
+    IO.puts("Starting #{"CPU_player: "<> init_arg.game_name}")
 
-    {:ok, %{:game => init_arg, :shots_coords => []}}
+    {:ok, %{:cpu_name => init_arg.cpu_name, :game => init_arg.game_name, :shots_coords => []}}
   end
   def reset_CPU_player(game_name) do
     GenServer.call(AppRegistry.using_via("CPU_player: "<>game_name), {:reset})
+  end
+  def is_CPU_player?(game_name, cpu_name) do
+    GenServer.call(AppRegistry.using_via("CPU_player: "<>game_name), {:is_cpu, cpu_name})
   end
 
   def handle_info(%{:result => result, :coords => coords}, state) do
@@ -55,8 +58,8 @@ defmodule Warships.CPUPlayer do
 
 
   def handle_info(%{:turn => turn}, state) do
-    if turn == "CPU" do
-
+    IO.puts("from CPU_player hinfo /2 #{inspect(turn)} #{inspect(state)}")
+    if turn == state.cpu_name do
       case check_for_hits(state.game) do
         nil ->
 
@@ -64,7 +67,8 @@ defmodule Warships.CPUPlayer do
           case init_hit do
             nil -> Process.sleep(1000)
               random_coord = Enum.random(CoordsGenStore.get_coords(state.game<>" CPU_coords"))
-              GameStore.shoot(state.game, "CPU", random_coord)
+              IO.puts("shooting to #{inspect(state.game)}, by #{state.cpu_name}, at #{inspect(random_coord)}")
+              GameStore.shoot(state.game, state.cpu_name, random_coord)
 
               {:noreply, state}
             init_hit ->
@@ -90,8 +94,17 @@ defmodule Warships.CPUPlayer do
   end
 
 
-  def handle_info(_msg, state) do
+  def handle_info(msg, state) do
+    IO.inspect(msg)
     {:noreply, state}
+  end
+  def handle_call({:is_cpu, cpu_name}, _from, state) do
+      if cpu_name == state.cpu_name do
+        {:reply, true, state}
+      else
+        {:reply, false, state}
+      end
+
   end
   def handle_call({:suicide}, _from, state) do
 
@@ -100,7 +113,7 @@ defmodule Warships.CPUPlayer do
   def handle_call({:reset}, _from, state) do
       CoordsGenStore.stop(state.game<>" CPU_coords")
       CoordsGenStore.start(state.game<>" CPU_coords")
-    {:reply, :ok, %{:game => state.game, :shots_coords => []}}
+    {:reply, :ok, %{:cpu_name => state.cpu_name, :game => state.game, :shots_coords => []}}
   end
   defp check_for_dir(game) do
     case CoordsGenStore.get_dir(game<>" CPU_coords") do
@@ -175,7 +188,7 @@ defmodule Warships.CPUPlayer do
         CoordsGenStore.save_dir(state.game<>" CPU_coords", 0)
 
         Process.sleep(1000)
-        GameStore.shoot(state.game, "CPU", new_coord)
+        GameStore.shoot(state.game, state.cpu_name, new_coord)
         {:noreply, state}
       else
         CoordsGenStore.save_tested_dir(state.game<>" CPU_coords", 0)
@@ -187,7 +200,7 @@ defmodule Warships.CPUPlayer do
       if CoordsGenStore.coord_is_valid?(state.game<>" CPU_coords", new_coord)  do
           CoordsGenStore.save_dir(state.game<>" CPU_coords", 1)
           Process.sleep(1000)
-          GameStore.shoot(state.game, "CPU", new_coord)
+          GameStore.shoot(state.game, state.cpu_name, new_coord)
           {:noreply, state}
 
       else
@@ -200,7 +213,7 @@ defmodule Warships.CPUPlayer do
       if CoordsGenStore.coord_is_valid?(state.game<>" CPU_coords", new_coord) do
           CoordsGenStore.save_dir(state.game<>" CPU_coords", 2)
           Process.sleep(1000)
-          GameStore.shoot(state.game, "CPU", new_coord)
+          GameStore.shoot(state.game, state.cpu_name, new_coord)
           {:noreply, state}
 
       else
@@ -213,7 +226,7 @@ defmodule Warships.CPUPlayer do
       if CoordsGenStore.coord_is_valid?(state.game<>" CPU_coords", new_coord)  do
           CoordsGenStore.save_dir(state.game<>" CPU_coords", 3)
           Process.sleep(1000)
-          GameStore.shoot(state.game, "CPU", new_coord)
+          GameStore.shoot(state.game, state.cpu_name, new_coord)
           {:noreply, state}
 
       else

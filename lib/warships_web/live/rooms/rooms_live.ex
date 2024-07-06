@@ -133,7 +133,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
   end
   def handle_event("play_cpu", _unsigned_params, socket) do
 
-      GameStore.add_player(socket.assigns.game.game, "CPU")
+      GameStore.add_player(socket.assigns.game.game, UniqueNamesGenerator.generate([:adjectives, :names, :numbers]), false)
     {:noreply, socket}
   end
   def handle_event("leave", _unsigned_params, socket) do

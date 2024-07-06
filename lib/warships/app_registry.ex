@@ -14,6 +14,12 @@ defmodule Warships.AppRegistry do
     )
   end
   def lookup(name) do
-  elem(hd(Registry.lookup(__MODULE__, name)), 0)
+    # maybe raise an exception here
+   case Registry.lookup(__MODULE__, name) do
+      [] ->
+        false
+      pid ->
+        elem(hd(pid), 0)
+   end
   end
 end

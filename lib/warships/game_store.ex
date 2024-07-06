@@ -39,8 +39,8 @@ defmodule Warships.GameStore do
     #### add_player("room_name", "foo")
 
   """
-  def add_player(server, name) do
-    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:add_player, %{:name => name}})
+  def add_player(server, name, is_human? \\ true) do
+    GenServer.call(AppRegistry.using_via("GameStore: "<>server), {:add_player, %{:name => name, :is_human? => is_human?}})
   end
 
   @doc """
@@ -91,9 +91,10 @@ defmodule Warships.GameStore do
           ShipStore.add_player(state.game, params.name)
           new_players_ =
             Map.put(state.players,params.name, %{
+              :is_human? => params.is_human?,
               :ships_hit => %{},
               :shots_coords => [],
-              :ready => player_cpu?(state.game, params.name)
+              :ready => player_cpu?(state.game, params.name, params.is_human?)
             })
 
           new_state_ = Map.put(state, :players, new_players_)
@@ -125,16 +126,20 @@ defmodule Warships.GameStore do
     players = Enum.map(state.players, fn x-> elem(x,0) end)
 
     for p <- players do
-      if p == "CPU" do
-        CPUPlayer.stop_link(state.game)
+
+      if state.players[p].is_human? == false && Warships.AppRegistry.lookup("CPU_player: "<>state.game)  do
+          CPUPlayer.stop_link(state.game)
       end
       ShipStore.remove_player(state.game, p)
-      if p != params.name do
+
+      if p != params.name && state.players[p].is_human? do
         ShipStore.add_player(state.game, p)
       end
     end
 
-    new_players_ = Map.delete(state.players, params.name)
+
+    new_players_ = state.players |> Map.delete(params.name) |> Map.delete(get_non_human_player(state))
+
 
     cond do
       length(Map.to_list(new_players_)) == 0 ->
@@ -143,7 +148,7 @@ defmodule Warships.GameStore do
 
         begin_termination_process(self())
 
-        {:reply, :OK, new_state}
+        {:reply, :OK, %{new_state | :state => :awaiting_players}}
         true ->
 
           new_players_clean =
@@ -198,14 +203,18 @@ defmodule Warships.GameStore do
     data = Map.get(state.players, params.shooter)
     target = elem(Enum.at(Enum.filter(state.players, fn {k,_v} -> k != params.shooter end), 0), 0)
 
-
     shot = ShipStore.check_if_ship_hit(state.game, target, params.coords)
 
     # # might a be good idea to check whether coords already exist in the list and keep shots fired/missed in ShipStore # #
+
+    IO.puts("""
+    state.players[params.shooter] = #{inspect(state.players[params.shooter])}
+    """)
     case shot do
       {:miss, coords} ->
 
-        if params.shooter == "CPU" do
+        if state.players[params.shooter].is_human? == false do
+          IO.puts("|| sending to CPU [miss]||")
           send_to_cpu_player(state, %{:result => :miss, :coords => coords })
         end
 
@@ -219,7 +228,8 @@ defmodule Warships.GameStore do
         {:reply, :ok, new_state}
 
       {:hit, id, coords} ->
-        if params.shooter == "CPU" do
+        if state.players[params.shooter].is_human? == false do
+          IO.puts("|| sending to CPU [hit]||")
           send_to_cpu_player(state, %{:result => :hit ,:coords => coords })
         end
         case  Enum.filter(Map.to_list(data.ships_hit), fn a -> elem(a,0) == id end) do
@@ -250,7 +260,8 @@ defmodule Warships.GameStore do
         end
 
       {:sunk, id, coords} ->
-        if params.shooter == "CPU" do
+        if state.players[params.shooter].is_human? == false do
+          IO.puts("|| sending to CPU [sunk[]]||")
           send_to_cpu_player(state, %{:result => :sunk ,:coords => coords })
         end
           case Enum.filter(Map.to_list(data.ships_hit), fn a -> elem(a,0) == id end) do
@@ -314,7 +325,8 @@ defmodule Warships.GameStore do
     {:reply, :ok, new_state}
   end
   def handle_call({:request_rematch, params}, _from, state) do
-    if Enum.member?(Map.keys(state.players), "CPU") do
+    # if Enum.member?(Map.keys(state.players), "CPU") do
+    if Enum.map(Map.to_list(state.players), fn x -> elem(x, 1).is_human? == true end) do
         new_state = reset_game(state)
         CPUPlayer.reset_CPU_player(state.game)
 
@@ -342,10 +354,11 @@ defmodule Warships.GameStore do
     {:noreply, state}
   end
 
-  defp player_cpu?(game, name) do
-    if name == "CPU" do
+  defp player_cpu?(game, name, is_human?) do
+
+    if is_human? == false do
       ShipStore.randomize_ship_placement(game, name)
-      CPUPlayer.start_link(game)
+      CPUPlayer.start_link(game, name)
 
       true
     else
@@ -353,12 +366,7 @@ defmodule Warships.GameStore do
     end
   end
   defp send_to_cpu_player(state, msg) do
-    case Enum.member?(Map.keys(state.players), "CPU") do
-      true ->
         Process.send(Warships.AppRegistry.lookup("CPU_player: "<>state.game) , msg, [])
-      false ->
-        nil
-    end
 
   end
   defp begin_termination_process(pid) do
@@ -377,7 +385,9 @@ defmodule Warships.GameStore do
   defp check_if_all_ships_sunken?(map_of_hit_ships, amount_of_ships) do
     length(Enum.map(map_of_hit_ships, fn x -> x end)) == amount_of_ships  && !Enum.member?(Enum.map(map_of_hit_ships, fn x -> elem(elem(x,1),0) end), :hit)
   end
+
   defp reset_game(state) do
+    IO.puts("reseting game")
     players = Enum.map(state.players, fn x-> elem(x,0) end)
     for p <- players do
       ShipStore.remove_player(state.game, p)
@@ -387,9 +397,10 @@ defmodule Warships.GameStore do
     players_list = Enum.map(players, fn x -> Map.put(%{
 
     }, x, %{
+    :is_human? => state.players[x].is_human?,
     :ships_hit => %{},
     :shots_coords => [],
-    :ready => player_cpu?(state.game, x)}) end)
+    :ready => player_cpu?(state.game, x, state.players[x].is_human?)}) end)
 
     players_map = Enum.reduce(players_list, fn x, y -> Map.merge(x,y) end)
 
@@ -397,5 +408,13 @@ defmodule Warships.GameStore do
 
     WarshipsWeb.Endpoint.broadcast("game", "game_state_update",new_state)
     new_state
+  end
+  defp get_non_human_player(state) do
+    case Enum.filter(Map.to_list(state.players), fn x -> elem(x, 1).is_human? == false end) do
+      [] ->
+        nil
+      _->
+        elem(hd(Enum.filter(Map.to_list(state.players), fn x -> elem(x, 1).is_human? == false end)), 0)
+    end
   end
 end
