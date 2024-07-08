@@ -26,6 +26,9 @@ defmodule Warships.CPUPlayer do
   def reset_CPU_player(game_name) do
     GenServer.call(AppRegistry.using_via("CPU_player: "<>game_name), {:reset})
   end
+  def reset_CPU_player(game_name, cpu_name) do
+    GenServer.call(AppRegistry.using_via("CPU_player: "<>game_name), {:reset, cpu_name})
+  end
   def is_CPU_player?(game_name, cpu_name) do
     GenServer.call(AppRegistry.using_via("CPU_player: "<>game_name), {:is_cpu, cpu_name})
   end
@@ -58,7 +61,7 @@ defmodule Warships.CPUPlayer do
 
 
   def handle_info(%{:turn => turn}, state) do
-    IO.puts("from CPU_player hinfo /2 #{inspect(turn)} #{inspect(state)}")
+
     if turn == state.cpu_name do
       case check_for_hits(state.game) do
         nil ->
@@ -67,14 +70,14 @@ defmodule Warships.CPUPlayer do
           case init_hit do
             nil -> Process.sleep(1000)
               random_coord = Enum.random(CoordsGenStore.get_coords(state.game<>" CPU_coords"))
-              IO.puts("shooting to #{inspect(state.game)}, by #{state.cpu_name}, at #{inspect(random_coord)}")
+
               GameStore.shoot(state.game, state.cpu_name, random_coord)
 
               {:noreply, state}
             init_hit ->
               Process.sleep(1000)
 
-            # GameStore.shoot(state.game, "CPU", random_coord)
+
             shoot(state, init_hit, hd(CoordsGenStore.get_dir(state.game<>" CPU_coords")), false)
               {:noreply, state}
           end
@@ -99,6 +102,7 @@ defmodule Warships.CPUPlayer do
     {:noreply, state}
   end
   def handle_call({:is_cpu, cpu_name}, _from, state) do
+
       if cpu_name == state.cpu_name do
         {:reply, true, state}
       else
@@ -114,6 +118,11 @@ defmodule Warships.CPUPlayer do
       CoordsGenStore.stop(state.game<>" CPU_coords")
       CoordsGenStore.start(state.game<>" CPU_coords")
     {:reply, :ok, %{:cpu_name => state.cpu_name, :game => state.game, :shots_coords => []}}
+  end
+  def handle_call({:reset, cpu_name}, _from, state) do
+      CoordsGenStore.stop(state.game<>" CPU_coords")
+      CoordsGenStore.start(state.game<>" CPU_coords")
+    {:reply, :ok, %{:cpu_name => cpu_name, :game => state.game, :shots_coords => []}}
   end
   defp check_for_dir(game) do
     case CoordsGenStore.get_dir(game<>" CPU_coords") do

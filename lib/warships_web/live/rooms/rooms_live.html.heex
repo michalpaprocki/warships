@@ -1,14 +1,15 @@
-
 <div class="w-full flex justify-center py-8">
   <span class="font-semibold p-2"><%= @room_name %></span>
 </div>
 
 <div class="flex flex-col md:items-center w-full pb-8">
+  
   <%= case @game.state do %>
     <% :awaiting_players -> %>
     
       <div class="flex justify-center items-center gap-12 flex-col">
         <span class="uppercase font-semibold">Awaiting opponent...</span>
+        <span class="uppercase font-semibold"><%= @game.state %></span>
         <.live_component module={WarshipsWeb.Spinners.Spinner1} id="spinner1" />
         <.button class="uppercase" phx-click="leave">leave</.button>
         <.button class="uppercase" phx-click="play_cpu">Play against a CPU</.button>
@@ -49,5 +50,21 @@
     <% _-> %>
       <span>DEFAULT_STATE</span>
    <% end %>
-   
+    <%= if @game.new_challenger != nil do %>
+      <div class="w-full flex justify-center">
+
+        <.modal id="room-modal" show={true} on_cancel={JS.push("decline_challenge")} show={true}>
+          <div class="flex gap-5 flex-col items-center justify-center">
+            <span class="capitalize">new challenger</span>
+            <span class="text-xl"><%= @game.new_challenger %></span>
+          </div>
+          <div class="flex justify-center gap-2">              
+            <.button class="mt-7" phx-click="accept_challenge">Accept</.button>
+            <.button class="mt-7" phx-click="decline_challenge">Decline (<%= @challenger_countdown %>)</.button>
+          </div>
+        </.modal>
+
+      </div>
+
+    <% end %>
 </div>

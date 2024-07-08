@@ -28,6 +28,13 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 ## Possible improvements :
 
+- [X] ~~*simple state machine that allows to play against a "CPU player"*~~
+    - [X] ~~*randomized ship placement*~~
+    - [X] ~~*simple state machine that tracks coords*~~
+    - [ ] perfect the code that generates the coords for next move
+- [ ] system that allows players to challange those currently playing against a "CPU player
+    - [X] ~~*implement a mechanic, that will allow to challenge players in matches against "CPU player"*~~
+    - [ ] give players a possibility to opt out of a challenge mechanic or/and ignore other player's requests
 - [ ] improve UI feedback
     - [X] ~~*when placing ships, draw ship's class and position on hover*~~
     - [ ] reduce ships that can be drawn by those already placed

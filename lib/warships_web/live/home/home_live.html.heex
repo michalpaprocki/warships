@@ -60,8 +60,11 @@
             <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-500 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
               <span><%= f.room %></span>
               <div class="flex gap-2 items-center">
+                <%= if f.has_cpu? do %>
+                  <span><.icon name="hero-cog-8-tooth-solid" class="h-5 w-5 animate-spin_slow" />&nbsp;vs CPU</span>
+                <% end %>
                 <%= if f.protected? do %>
-                  <span>  <.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
+                  <span class="flex justify-center"><.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
                 <% end %>
                   <span>Players&nbsp;:</span>
                   <span><%= f.players %> / 2</span>
@@ -71,7 +74,7 @@
           <% @show_full == false && @show_protected == true -> %>
             <%= cond do %>
               <% f.players == 2 -> %>
-                <% nil %>
+              <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
               <% true -> %>
                 <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
                   <span><%= f.room %></span>
@@ -88,11 +91,14 @@
           <% @show_full == true && @show_protected == false -> %>
             <%= cond do %>
               <% f.protected? == true -> %>
-                <% nil %>
+              <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
               <% true -> %>
                 <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
                   <span><%= f.room %></span>
                   <div class="flex gap-2 items-center">
+                    <%= if f.has_cpu? do %>
+                      <span><.icon name="hero-cog-8-tooth-solid" class="h-5 w-5 animate-spin_slow" />&nbsp;vs CPU</span>
+                    <% end %>
                     <%= if f.protected? do %>
                       <span>  <.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
                     <% end %>
@@ -104,7 +110,7 @@
           <% @show_full == false && @show_protected == false -> %>
             <%= cond do %>
               <% f.protected? == true || f.players == 2  -> %>
-                <% nil %>
+              <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
               <% true -> %>
                 <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
                   <span><%= f.room %></span>
@@ -118,7 +124,7 @@
                 </.link>
             <% end %>
           <% true -> %>
-            <% nil %>
+           <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
         <% end %>
       <% end %> 
     </div>

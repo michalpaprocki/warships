@@ -162,6 +162,7 @@ module.exports = {
       },
       },
       animation: {
+        spin_slow: "spin 10s linear infinite",
         pendulumTop:
           "pendulumFromTop 1s cubic-bezier(0.2, 1.5, 0.2, 0.4) infinite",
         pendulumCenter:

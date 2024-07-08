@@ -9,6 +9,11 @@ defmodule WarshipsWeb.Home.HomeLive do
   alias Warships.RoomStore
   alias WarshipsWeb.Auth.Auth
 
+
+  # handle challenge redirection
+
+
+
   def mount(_params, _session, socket) do
     user_token = socket.assigns[:user_token]
 
@@ -195,7 +200,9 @@ defmodule WarshipsWeb.Home.HomeLive do
           [] ->
             {:noreply, socket}
           _->
-            target_room_u = Map.replace(Enum.at(target_room, 0), :players, msg.payload.player_count)
+
+            target_room_u = Enum.at(target_room, 0) |> Map.replace(:players, msg.payload.player_count) |> Map.replace(:has_cpu?, GameStore.has_player_cpu?(msg.payload.room))
+
             rooms_data_u = Enum.map(rooms_data, fn x -> if x.room != msg.payload.room, do: x, else: target_room_u end)
 
             {:noreply, socket |> assign(:rooms_data, rooms_data_u)}
@@ -208,11 +215,22 @@ defmodule WarshipsWeb.Home.HomeLive do
             [] ->
               {:noreply, socket}
             _->
-            target_room_u = Map.replace(Enum.at(target_room, 0), :players, msg.payload.player_count)
+              target_room_u = Enum.at(target_room, 0) |> Map.replace(:players, msg.payload.player_count) |> Map.replace(:has_cpu?, GameStore.has_player_cpu?(msg.payload.room))
             rooms_data_u = Enum.map(rooms_data, fn x -> if x.room != msg.payload.room, do: x, else: target_room_u end)
 
             {:noreply, socket |> assign(:rooms_data, rooms_data_u)}
           end
+          "redirect_after_challenge_accepted" ->
+            {room_name, player} = msg.payload
+
+
+            if player == socket.assigns.nickname do
+              {:noreply, socket|> put_flash(:info, "Challenge accepted") |> push_navigate(to: ~p"/rooms/#{room_name}")}
+
+            else
+              {:noreply, socket}
+            end
+
         _ ->
 
           {:noreply, socket}
@@ -220,10 +238,10 @@ defmodule WarshipsWeb.Home.HomeLive do
   end
 
   defp get_rooms_data() do
-
     running_rooms_ = RoomSupervisor.get_running_games()
+
     rooms = Enum.map(Enum.filter(running_rooms_, fn x-> hd(elem(x, 3)) == Warships.GameStore end), fn y -> elem(y, 0) end )
-    Enum.sort(Enum.map(rooms, fn x -> %{:room=> extract_name(x), :players => GameStore.get_player_count(extract_name(x)), :protected? => RoomStore.room_protected?(extract_name(x))} end))
+    Enum.sort(Enum.map(rooms, fn x -> %{:room=> extract_name(x), :players => GameStore.get_player_count(extract_name(x)), :protected? => RoomStore.room_protected?(extract_name(x)), :has_cpu? => GameStore.has_player_cpu?(extract_name(x))} end))
 
   end
   defp extract_name(name) do

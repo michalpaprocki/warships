@@ -13,7 +13,7 @@ defmodule Warships.RefStore do
 
   def init(_init_arg) do
     IO.puts("Creating Ref Store")
-    :ets.new(:refs_test, [:protected, :named_table, :set])
+    :ets.new(:refs_, [:protected, :named_table, :set])
     {:ok, :ok}
   end
   @doc """
@@ -68,27 +68,27 @@ defmodule Warships.RefStore do
 # # # # # # # # # # # # # # # # handlers  # # # # # # # # # # # # # # # #
 
   def handle_call({:add, pid, ref}, _from, state) do
-    resp = :ets.insert(:refs_test, {pid, ref})
+    resp = :ets.insert(:refs_, {pid, ref})
     {:reply, resp, state}
   end
 
   def handle_call({:get, pid}, _from, state) do
 
-    ref = :ets.match(:refs_test, {pid, :"$1"})
+    ref = :ets.match(:refs_, {pid, :"$1"})
 
     {:reply, ref, state}
   end
 
   def handle_call({:delete, pid}, _from, state) do
 
-    ref = :ets.delete(:refs_test, pid)
+    ref = :ets.delete(:refs_, pid)
 
     {:reply, ref, state}
   end
 
   def handle_call(:get_all, _from, state) do
 
-    refs = :ets.match(:refs_test, {:"$0", :"$1"})
+    refs = :ets.match(:refs_, {:"$0", :"$1"})
 
     {:reply, refs, state}
   end

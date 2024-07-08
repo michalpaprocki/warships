@@ -14,6 +14,7 @@ defmodule WarshipsWeb.Game.PrepBoard.PrepBoard do
 
         player_ships = ShipStore.get_player_ships(assigns.game.game, assigns.nickname)
 
+
         adjacent = Helpers.gen_adjacent_from_ship_map(player_ships)
 
         {:ok, socket|> assign(:hover_coords, %{"x"=>"", "y"=> ""}) |> assign(:phase, :first)|> assign(:adjacent, adjacent) |> assign(:ships_on_board, player_ships)|> assign(:selected_coords, {"", ""}) |> assign(assigns)|> assign_new(:x_range, fn  -> Helpers.generate_x_board() end)|> assign_new(:y_range,fn  -> Helpers.generate_y_board()end )}

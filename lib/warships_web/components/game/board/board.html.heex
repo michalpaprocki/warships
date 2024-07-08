@@ -82,7 +82,7 @@
             <div class="after:font-semibold md:text-sm relative bg-violet-800 bg-0.25x0.25 rounded-md ring-blue-800 ring-1 md:ring-0 text-gray-300  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate after:content-['m4'] after:absolute after:bg-white after:text-gray-700 after:rounded-md after:px-2 after:py-2  hover:after:block after:hidden after:opacity-0 hover:after:opacity-100 ">  <%= x %> <%= y %></div>
             <% true -> %>
         
-            <div phx-click="shoot" phx-target={@myself} phx-value-x={x} phx-value-y={y} 
+            <div phx-value-x={x} phx-value-y={y} 
             class="ring-blue-800  ring-1 md:ring-0 md:text-sm rounded-md text-gray-700  transition text-sm uppercase font-semibold flex justify-center items-center animate-hue_rotate bg-blue-300">
                 <%= x %> <%= y %>
             

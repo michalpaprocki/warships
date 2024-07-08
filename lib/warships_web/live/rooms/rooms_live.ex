@@ -1,4 +1,6 @@
 defmodule WarshipsWeb.Rooms.RoomsLive do
+
+
   alias Warships.RefStore
   alias Warships.LiveMonitor
   alias WarshipsWeb.Game.PrepBoard.PrepBoard
@@ -14,7 +16,6 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
       {:ok, socket |> push_navigate(to: ~p"/")}
 
     else
-
 
     room = RoomStore.get_room(params["room_name"])
 
@@ -32,6 +33,13 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
             resp = GameStore.add_player(extract_room_name(room), socket.assigns.nickname)
 
               case resp do
+                {:error, :WIP} ->
+                  {:ok, socket|> put_flash(:info, "Challenge request sent")|> push_navigate(to: ~p"/")}
+
+                {:error, :challenged} ->
+
+                  {:ok, socket|> put_flash(:error, "Player already challenged.")|> push_navigate(to: ~p"/")}
+
                 {:error, :room_is_full} ->
 
                   {:ok, socket|> put_flash(:error, "Room is full.")|> push_navigate(to: ~p"/")}
@@ -53,9 +61,11 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                     :page_title => extract_room_name(room),
                     :nickname => socket.assigns.nickname,
                     :joined_rooms => new_joined_rooms,
-                    :game => game
+                    :game => game,
+                    :challenger_countdown => nil
                   })}
                 _ ->
+
                   LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
                   last_msgs = ChatStore.async_get_last_msgs(:CS_lobby)
                   lobby_map = Map.get(socket.assigns.joined_rooms, :lobby)
@@ -69,7 +79,8 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                     :room_name => extract_room_name(room),
                     :nickname => socket.assigns.nickname,
                     :joined_rooms => new_joined_rooms,
-                    :game => game
+                    :game => game,
+                    :challenger_countdown => nil
                   })}
               end
 
@@ -81,6 +92,12 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
             resp = GameStore.add_player(extract_room_name(room), socket.assigns.nickname)
 
             case resp do
+              {:error, :wip} ->
+                {:ok, socket|> put_flash(:info, "Work in Progress.")|> push_navigate(to: ~p"/")}
+
+              {:error, :challenged} ->
+
+                {:ok, socket|> put_flash(:error, "Player already challenged.")|> push_navigate(to: ~p"/")}
               {:error, :room_is_full} ->
 
                 {:ok, socket|> put_flash(:error, "Room is full.")|> push_navigate(to: ~p"/")}
@@ -101,7 +118,8 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                   :page_title => extract_room_name(room),
                   :nickname => socket.assigns.nickname,
                   :joined_rooms => new_joined_rooms,
-                  :game => game
+                  :game => game,
+                  :challenger_countdown => nil
                 })}
               _ ->
                 LiveMonitor.monitor(self(), __MODULE__, extract_room_name(room), socket.assigns.nickname)
@@ -118,7 +136,8 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
                    :page_title => extract_room_name(room),
                    :nickname => socket.assigns.nickname,
                    :joined_rooms => new_joined_rooms,
-                   :game => game
+                   :game => game,
+                   :challenger_countdown => nil
                  })}
             end
           end
@@ -142,12 +161,7 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
     {:noreply, socket |> push_navigate(to: ~p"/")}
   end
   def handle_event("accept_rematch", _unsigned_params, socket) do
-
-
     Warships.GameStore.accept_rematch(socket.assigns.game.game)
-
-
-
     {:noreply, socket }
   end
   def handle_event("toggle_header_menu", _unsigned_params, socket) do
@@ -159,6 +173,19 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
   def handle_event("logout", _unsigned_params, socket) do
     ChatStore.remove_chat_member(:CS_lobby, socket.assigns.nickname)
     {:noreply, socket |> assign(:nickname, nil) |> redirect(to: ~p"/logout")}
+  end
+  def handle_event("accept_challenge", _unsigned_params, socket) do
+    GameStore.accept_challenge(socket.assigns.game.game)
+
+    {:noreply, socket |> assign(:challenger_countdown, 0)}
+  end
+  def handle_event("decline_challenge", _unsigned_params, socket) do
+
+    ref = Warships.RefStore.get_ref(self())
+    Warships.RefStore.delete_ref(self())
+    :timer.cancel(hd(hd(ref)))
+    GameStore.decline_challenge(socket.assigns.game.game)
+    {:noreply, socket |> assign(:challenger_countdown, 0)}
   end
   def handle_info({:update_flash, {flash_type, msg}}, socket) do
 
@@ -182,6 +209,17 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
     {:noreply, socket |> clear_flash()}
   end
 
+  def handle_info(:countdown, socket) do
+      #  investigate the reason behind :timer sometimes running parallel intervals
+        if socket.assigns.challenger_countdown == 0 do
+          :timer.cancel(Warships.RefStore.get_ref(self()))
+          Warships.RefStore.delete_ref(self())
+          GameStore.decline_challenge(socket.assigns.game.game)
+          {:noreply, socket |> assign(:challenger_countdown, 0)}
+        else
+          {:noreply, socket |> assign(:challenger_countdown, socket.assigns.challenger_countdown - 1)}
+        end
+  end
   def handle_info(msg, socket) do
 
         case msg.event do
@@ -221,7 +259,12 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
       "game_state_update" ->
 
-        {:noreply, socket |> assign(:game, msg.payload)}
+          if msg.payload.new_challenger != nil do
+            handle_countdown()
+            {:noreply, socket |> assign(:game, msg.payload) |> assign(:challenger_countdown, 10)}
+          else
+            {:noreply, socket |> assign(:game, msg.payload)}
+          end
 
       "ship_added" ->
         if msg.payload.player == socket.assigns.nickname do
@@ -247,10 +290,6 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
     end
   end
 
-
-
-
-
   ############## priv ##############
   defp extract_room_name(room_tuple),
     do: elem(room_tuple, 0)
@@ -275,5 +314,9 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
       false
     end
   end
+  defp handle_countdown() do
+        {:ok, ref} = :timer.send_interval(1000, self(), :countdown)
 
+        Warships.RefStore.add_ref(self(), ref)
+  end
 end
