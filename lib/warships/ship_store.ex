@@ -189,7 +189,6 @@ defmodule Warships.ShipStore do
 
   def handle_call({:get_player_ships, params}, _from, state) do
     player_ships = Map.get(state.players, params.player)
-
     {:reply, player_ships.map_of_ships, state}
   end
 
@@ -245,10 +244,12 @@ defmodule Warships.ShipStore do
     new_map_of_ships = Map.replace(state.players[params.player], :map_of_ships, map)
     new_player = Map.replace(state.players, params.player, new_map_of_ships)
     new_state = Map.replace(state, :players, new_player)
+
     WarshipsWeb.Endpoint.broadcast("game", "ship_added", %{
       :player => params.player,
       :state => Map.get(new_state.players, params.player, [])
     })
+
     {:reply, :random, new_state}
   end
 
@@ -340,17 +341,28 @@ defmodule Warships.ShipStore do
         put_in_map(new_map, List.delete_at(list, 0))
     end
   end
+
   defp push_ships(list_of_ship_maps, map) do
-
-
     case length(list_of_ship_maps) do
       1 ->
-        Map.put(map, elem(hd(Map.to_list(hd(list_of_ship_maps))), 0), elem(hd(Map.to_list(hd(list_of_ship_maps))), 1))
-      _x->
-        new_map = Map.put(map, elem(hd(Map.to_list(hd(list_of_ship_maps))), 0), elem(hd(Map.to_list(hd(list_of_ship_maps))), 1))
+        Map.put(
+          map,
+          elem(hd(Map.to_list(hd(list_of_ship_maps))), 0),
+          elem(hd(Map.to_list(hd(list_of_ship_maps))), 1)
+        )
+
+      _x ->
+        new_map =
+          Map.put(
+            map,
+            elem(hd(Map.to_list(hd(list_of_ship_maps))), 0),
+            elem(hd(Map.to_list(hd(list_of_ship_maps))), 1)
+          )
+
         push_ships(List.delete_at(list_of_ship_maps, 0), new_map)
     end
   end
+
   defp gen_ships(game, class) do
     case class do
       :m4 ->
@@ -371,7 +383,12 @@ defmodule Warships.ShipStore do
     case length do
       1 ->
         new_coords = [Enum.random(CoordsGenStore.get_coords(game)) | init_value]
-        CoordsGenStore.reduce(game, Enum.map(new_coords, fn x -> Helpers.gen_adjacent_tiles(x) end))
+
+        CoordsGenStore.reduce(
+          game,
+          Enum.map(new_coords, fn x -> Helpers.gen_adjacent_tiles(x) end)
+        )
+
         #  prep sid
         new_coords
 
@@ -400,10 +417,13 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
+                 Enum.map(new_coords, fn x ->
+                   !Enum.member?(CoordsGenStore.get_coords(game), x)
+                 end),
                  true
                ) do
-              grow_coords(game,
+              grow_coords(
+                game,
                 [Enum.random(CoordsGenStore.get_coords(game))],
                 dir,
                 CoordsGenStore.get_len(game),
@@ -430,7 +450,9 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
+                 Enum.map(new_coords, fn x ->
+                   !Enum.member?(CoordsGenStore.get_coords(game), x)
+                 end),
                  true
                ) do
               grow_coords(
@@ -461,7 +483,9 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
+                 Enum.map(new_coords, fn x ->
+                   !Enum.member?(CoordsGenStore.get_coords(game), x)
+                 end),
                  true
                ) do
               grow_coords(
@@ -492,7 +516,9 @@ defmodule Warships.ShipStore do
         case len do
           1 ->
             if Enum.member?(
-                 Enum.map(new_coords, fn x -> !Enum.member?(CoordsGenStore.get_coords(game), x) end),
+                 Enum.map(new_coords, fn x ->
+                   !Enum.member?(CoordsGenStore.get_coords(game), x)
+                 end),
                  true
                ) do
               grow_coords(
