@@ -1,5 +1,3 @@
-
-
 # Warships
 
 Batteships game for 2 players. 🚢
@@ -14,7 +12,7 @@ Batteships game for 2 players. 🚢
 ## Technologies
 
 - Phoenix Framework 1.7
-- TailwindCSS 
+- TailwindCSS
 
 ## Running app locally
 
@@ -25,22 +23,21 @@ To start your Phoenix server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-
 ## Possible improvements :
 
-- [X] ~~*simple state machine that allows to play against a "CPU player"*~~
-    - [X] ~~*randomized ship placement*~~
-    - [X] ~~*simple state machine that tracks coords*~~
-    - [ ] perfect the code that generates the coords for next move
+- [x] ~~_simple state machine that allows to play against a "CPU player"_~~
+  - [x] ~~_randomized ship placement_~~
+  - [x] ~~_simple state machine that tracks coords_~~
+  - [ ] perfect the code that generates the coords for next move
 - [ ] system that allows players to challange those currently playing against a "CPU player
-    - [X] ~~*implement a mechanic, that will allow to challenge players in matches against "CPU player"*~~
-    - [ ] give players a possibility to opt out of a challenge mechanic or/and ignore other player's requests
+  - [x] ~~_implement a mechanic, that will allow to challenge players in matches against "CPU player"_~~
+  - [/] give players a possibility to opt out of a challenge mechanic or/and ignore other player's requests
 - [ ] improve UI feedback
-    - [X] ~~*when placing ships, draw ship's class and position on hover*~~
-    - [ ] reduce ships that can be drawn by those already placed
-    - [ ] change "miss", "hit" and "sunk" responses after shooting to something more aesthetic
-    - [ ] [optional] display opponent's mouse cursor on player's boards, when it's opponent's turn
-- [X] ~~*develop a mechanism responsible for flash message clean up*~~
+  - [x] ~~_when placing ships, draw ship's class and position on hover_~~
+  - [ ] reduce ships that can be drawn by those already placed
+  - [ ] change "miss", "hit" and "sunk" responses after shooting to something more aesthetic
+  - [ ] [optional] display opponent's mouse cursor on player's boards, when it's opponent's turn
+- [x] ~~_develop a mechanism responsible for flash message clean up_~~
 - [ ] design a system that will prevent users from opening more than 1 tab; current app implementation removes the player from game and chat when closing one of concurrent app tabs
-- [X] ~~*add a favicon*~~ 
-
+- [x] ~~_add a favicon_~~
+- [ ] investigate why manifest.json is not being server correctly

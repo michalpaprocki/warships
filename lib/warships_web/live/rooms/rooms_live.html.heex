@@ -53,7 +53,7 @@
     <%= if @game.new_challenger != nil do %>
       <div class="w-full flex justify-center">
 
-        <.modal id="room-modal" show={true} on_cancel={JS.push("decline_challenge")} show={true}>
+        <.modal id="room-modal" show={true} on_cancel={JS.push("decline_challenge")}>
           <div class="flex gap-5 flex-col items-center justify-center">
             <span class="capitalize">new challenger</span>
             <span class="text-xl"><%= @game.new_challenger %></span>
