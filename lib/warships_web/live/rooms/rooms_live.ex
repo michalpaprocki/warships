@@ -22,6 +22,13 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
 
         room ->
           cond do
+            # rework this guard
+            GameStore.has_challenge_enabled?(extract_room_name(room)) == false ->
+              {:ok,
+               socket
+               |> put_flash(:error, "User doesn't accept challenges.")
+               |> push_navigate(to: ~p"/")}
+
             check_if_room_authed(session["authed_rooms"], room) ->
               resp = GameStore.add_player(extract_room_name(room), socket.assigns.nickname)
 
@@ -195,6 +202,11 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
     {:noreply, socket |> assign(:header_menu, !socket.assigns.header_menu)}
   end
 
+  def handle_event("toggle_player_challenge", _unsigned_params, socket) do
+    GameStore.toggle_challenge(socket.assigns.game.game)
+    {:noreply, socket}
+  end
+
   def handle_event("close_header_menu", _unsigned_params, socket) do
     {:noreply, socket |> assign(:header_menu, false)}
   end
@@ -289,11 +301,15 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
         {:noreply, socket |> assign(:joined_rooms, new_joined_rooms)}
 
       "game_state_update" ->
-        if msg.payload.new_challenger != nil do
-          handle_countdown()
-          {:noreply, socket |> assign(:game, msg.payload) |> assign(:challenger_countdown, 10)}
+        if msg.payload.game == socket.assigns.game.game do
+          if msg.payload.new_challenger != nil do
+            handle_countdown()
+            {:noreply, socket |> assign(:game, msg.payload) |> assign(:challenger_countdown, 10)}
+          else
+            {:noreply, socket |> assign(:game, msg.payload)}
+          end
         else
-          {:noreply, socket |> assign(:game, msg.payload)}
+          {:noreply, socket}
         end
 
       "ship_added" ->

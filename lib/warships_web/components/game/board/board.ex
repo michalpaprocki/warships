@@ -6,10 +6,6 @@ defmodule WarshipsWeb.Game.Board.Board do
   def update(assigns, socket) do
     my_ships = ShipStore.get_player_ships(assigns.game.game, assigns.nickname)
 
-    IO.inspect(my_ships.m1)
-    # IO.inspect(Enum.map(my_ships.m1, fn x -> x end))
-    IO.inspect(Enum.sort(my_ships.m1))
-
     {:ok,
      socket
      |> assign(assigns)

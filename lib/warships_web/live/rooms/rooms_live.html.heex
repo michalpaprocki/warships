@@ -1,18 +1,33 @@
 <div class="w-full flex justify-center py-8">
-  <span class="font-semibold p-2"><%= @room_name %></span>
+  <span class="text-xl font-semibold p-2"><%= @room_name %></span>
 </div>
 
 <div class="flex flex-col md:items-center w-full pb-8">
-  
   <%= case @game.state do %>
     <% :awaiting_players -> %>
-    
+
       <div class="flex justify-center items-center gap-12 flex-col">
-        <span class="uppercase font-semibold">Awaiting opponent...</span>
-        <span class="uppercase font-semibold"><%= @game.state %></span>
+        <%= if  @game.allow_challenge? do %>
+
+          <span class="py-8 uppercase font-semibold">Awaiting opponent...</span>
+          
+          <% else %>
+          <span class="py-8 uppercase font-semibold">Choose an action:</span>
+          <% end %>
+          
         <.live_component module={WarshipsWeb.Spinners.Spinner1} id="spinner1" />
-        <.button class="uppercase" phx-click="leave">leave</.button>
-        <.button class="uppercase" phx-click="play_cpu">Play against a CPU</.button>
+        <div class="flex flex-col items-center gap-4 py-6">
+          <.button class="uppercase" phx-click="play_cpu">play against a CPU</.button>
+       
+          <.button class="uppercase w-[30ch] text-nowrap" phx-click="toggle_player_challenge">
+            <%= if @game.allow_challenge? == true do %>
+            disable player challenges 🗵
+            <% else %>
+            enable player challenges ☐
+            <% end %>
+          </.button>
+        </div>
+        <.button class="uppercase bg-red-900 hover:bg-red-700" phx-click="leave">leave</.button>
 
       </div>
     <% :prep -> %>

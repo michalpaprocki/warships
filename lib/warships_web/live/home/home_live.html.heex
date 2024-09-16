@@ -15,12 +15,11 @@
     
       <.simple_form for={@room_form} phx-change="validate" phx-submit="save" class="flex flex-col items-center">
         <.input field={@room_form[:room_name]} label="Room Name" />
-        <.input field={@room_form[:with_password]} label="Password ?" type="checkbox" phx-click="req_pwd"/>
-    
-    
         <%= if @require_password == true do %>
         <.input type="password" field={@room_form[:room_password]} label="Room Password" />
         <% end %>
+        <.input field={@room_form[:with_password]} label="Password ?" type="checkbox" phx-click="req_pwd"/>
+        <.input field={@room_form[:with_challenge]} label="Allow player challenges ?" type="checkbox" checked phx-click="req_player_challenges"/>
     
         <:actions>
           <.button>Create</.button>
@@ -34,15 +33,15 @@
   </div>
 
 <section class="w-full py-8 px-2 flex flex-col items-center">
-  <div class="flex gap-2 md:flex-row flex-col items-center">
+  <div class="flex gap-4 md:flex-row flex-col items-center">
     <div class="flex flex-col gap-1">
       <div class="flex gap-2 items-center justify-between p-2">
-        <label class="font-semibold">Show full rooms: </label>
-        <input type="checkbox" name="show_full" id="show_full_checker" checked={@show_full} phx-click="toggle_show_full" class="cursor-pointer hover:bg-violet-500 checked:bg-violet-500">
+        <label for="show_full_checker" class="font-semibold">Show full rooms: </label>
+        <input type="checkbox" name="show_full" id="show_full_checker" checked={@show_full} phx-click="toggle_show_full" class="select-none md:h-4 md:w-4 sm:h-6 sm:w-6 h-8 w-8 bg-black md:bg-red-600 cursor-pointer hover:bg-violet-500 checked:bg-violet-500">
       </div>
       <div class="flex gap-2 items-center justify-between p-2">
-        <label class="font-semibold">Show protected rooms: </label>
-        <input type="checkbox" name="show_protected" id="show_protected_checker" checked={@show_protected} phx-click="toggle_show_protected" class="cursor-pointer hover:bg-violet-500 checked:bg-violet-500">
+        <label for="show_protected_checker" class="font-semibold">Show protected rooms: </label>
+        <input type="checkbox" name="show_protected" id="show_protected_checker" checked={@show_protected} phx-click="toggle_show_protected" class="select-none md:h-4 md:w-4 sm:h-6 sm:w-6 h-8 w-8 cursor-pointer hover:bg-violet-500 checked:bg-violet-500">
       </div>
     </div>
     <div class="p-2">
@@ -52,14 +51,16 @@
     </div>
   </div>
   <%= if length(@rooms_data) > 0 do %>
-    <div class="w-[80%] grid ring-purple-500 ring-2 gap-1 p-2 shadow-black shadow-md bg-white">
+    <div class="w-[80%] grid ring-purple-500 ring-2 gap-1 p-2 shadow-black shadow-md bg-white min-h-12 mt-10">
       <%=  for f <- @rooms_data do %>
         <%= cond do %>
           <% @show_full == true && @show_protected == true -> %>
-
-            <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-500 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
+            <.link navigate={~p"/rooms/#{f.room}"} class="w-full sm:flex-row flex-col hover:bg-purple-500 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
               <span><%= f.room %></span>
-              <div class="flex gap-2 items-center">
+              <div class="flex gap-2 items-center text-sm font-semibold whitespace-nowrap sm:self-auto self-end">
+                <%= if !f.challenge_allowed? do %>
+                <span class="flex items-center"><.icon name="hero-x-mark-solid" class="h-5 w-5" />DND</span>
+              <% end %>
                 <%= if f.has_cpu? do %>
                   <span><.icon name="hero-cog-8-tooth-solid" class="h-5 w-5 animate-spin_slow" />&nbsp;vs CPU</span>
                 <% end %>
@@ -74,13 +75,15 @@
           <% @show_full == false && @show_protected == true -> %>
             <%= cond do %>
               <% f.players == 2 -> %>
-              <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
               <% true -> %>
                 <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
                   <span><%= f.room %></span>
-                  <div class="flex gap-2 items-center">
+                  <div class="flex gap-2 items-center text-sm font-semibold whitespace-nowrap sm:self-auto self-end">
+                    <%= if !f.challenge_allowed? do %>
+                    <span class="flex items-center"><.icon name="hero-x-mark-solid" class="h-5 w-5" />DND</span>
+                  <% end %>
                     <%= if f.protected? do %>
-                      <span>  <.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
+                      <span class="flex justify-center"><.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
                     <% end %>
                       <span>Players&nbsp;:</span>
                       <span><%= f.players %> / 2</span>
@@ -91,16 +94,18 @@
           <% @show_full == true && @show_protected == false -> %>
             <%= cond do %>
               <% f.protected? == true -> %>
-              <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
               <% true -> %>
                 <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
                   <span><%= f.room %></span>
-                  <div class="flex gap-2 items-center">
+                  <div class="flex gap-2 items-center text-sm font-semibold whitespace-nowrap sm:self-auto self-end">
+                    <%= if !f.challenge_allowed? do %>
+                    <span class="flex items-center"><.icon name="hero-x-mark-solid" class="h-5 w-5" />DND</span>
+                  <% end %>
                     <%= if f.has_cpu? do %>
                       <span><.icon name="hero-cog-8-tooth-solid" class="h-5 w-5 animate-spin_slow" />&nbsp;vs CPU</span>
                     <% end %>
                     <%= if f.protected? do %>
-                      <span>  <.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
+                      <span class="flex justify-center"><.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
                     <% end %>
                       <span>Players&nbsp;:</span>
                       <span><%= f.players %> / 2</span>
@@ -110,21 +115,21 @@
           <% @show_full == false && @show_protected == false -> %>
             <%= cond do %>
               <% f.protected? == true || f.players == 2  -> %>
-              <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
               <% true -> %>
                 <.link navigate={~p"/rooms/#{f.room}"} class="w-full hover:bg-purple-700 hover:text-white hover:-translate-y-1 transition p-1 flex justify-between">
                   <span><%= f.room %></span>
-                  <div class="flex gap-2 items-center">
+                  <div class="flex gap-2 items-center text-sm font-semibold whitespace-nowrap sm:self-auto self-end">
+                    <%= if !f.challenge_allowed? do %>
+                    <span class="flex items-center"><.icon name="hero-x-mark-solid" class="h-5 w-5" />DND</span>
+                  <% end %>
                     <%= if f.protected? do %>
-                      <span>  <.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
+                      <span class="flex justify-center"><.icon name="hero-lock-closed-solid" class="h-5 w-5" /></span>
                     <% end %>
                       <span>Players&nbsp;:</span>
                       <span><%= f.players %> / 2</span>
                   </div>
                 </.link>
             <% end %>
-          <% true -> %>
-           <span class="capitalize p-1 flex items-center justify-center font-semibold text-xl">filters returned no results</span>
         <% end %>
       <% end %> 
     </div>

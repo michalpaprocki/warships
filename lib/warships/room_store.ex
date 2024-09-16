@@ -2,8 +2,8 @@ defmodule Warships.RoomStore do
   @moduledoc """
   An :ets store for rooms
   """
-alias Warships.RoomSupervisor
-alias Warships.AppRegistry
+  alias Warships.RoomSupervisor
+  alias Warships.AppRegistry
   use GenServer
   @name __MODULE__
 
@@ -25,22 +25,23 @@ alias Warships.AppRegistry
     {:ok, "ETS created"}
   end
 
-@doc """
-  Looks for a room by the `name` provided
+  @doc """
+    Looks for a room by the `name` provided
 
-  Returns: `{"name","password"}`
+    Returns: `{"name","password"}`
 
-  ## Examples
+    ## Examples
 
-      iex>Warships.RoomStore.get_room("test")
-      {"test", ""}
+        iex>Warships.RoomStore.get_room("test")
+        {"test", ""}
 
-      iex>Warships.RoomStore.get_room(:test)
-      "Variable name have to be of type string"
-"""
+        iex>Warships.RoomStore.get_room(:test)
+        "Variable name have to be of type string"
+  """
   def get_room(name) when is_binary(name) do
-    GenServer.call(@name, {:get, %{:name=> name}})
+    GenServer.call(@name, {:get, %{:name => name}})
   end
+
   def get_room(_name) do
     raise("Variable `name` has to be of type string")
   end
@@ -61,6 +62,7 @@ alias Warships.AppRegistry
   def get_all_rooms() do
     GenServer.call(@name, {:all})
   end
+
   @doc """
     Checks whether room is protected by a password.
 
@@ -71,11 +73,13 @@ alias Warships.AppRegistry
       false
   """
   def room_protected?(name) when is_binary(name) do
-    GenServer.call(@name, {:protected, %{:name=> name}})
+    GenServer.call(@name, {:protected, %{:name => name}})
   end
+
   def room_protected?(_name) do
     raise("Variable `name` has to be of type string")
   end
+
   @doc """
   Inserts a room to the :rooms table. Spawns `Warships.GameStore` and `Warships.ShipStore` processes via `Warships.RoomSupervisor`, and broadcasts a message to processes subscribed to "rooms" topic.
 
@@ -88,7 +92,8 @@ alias Warships.AppRegistry
       iex>insert_room("existing_name", "")
       {:error, "Could not create room, name taken"}
   """
-  def insert_room(name, password) when is_binary(name) and is_binary(password) or is_binary(name) and is_nil(password) do
+  def insert_room(name, password)
+      when (is_binary(name) and is_binary(password)) or (is_binary(name) and is_nil(password)) do
     GenServer.call(
       @name,
       {:insert, %{:name => to_string(name), :password => to_string(password)}}
@@ -114,9 +119,11 @@ alias Warships.AppRegistry
   def delete_room(name) when is_binary(name) do
     GenServer.call(@name, {:delete, %{:name => name}})
   end
+
   def delete_room(_name) do
     raise("Variable `name` has to be of type string.")
   end
+
   @doc """
   Checks whether provided `name` and `password` match.
 
@@ -135,18 +142,32 @@ alias Warships.AppRegistry
       {:verify_password, %{:name => name, :password => password}}
     )
   end
-  def verify_password(_name, _password)  do
+
+  def verify_password(_name, _password) do
     raise("Variables `name` and `password` have to be of type string")
   end
+
   ##################### handlers #####################
   def handle_call({:insert, params}, _from, state) do
     room = :ets.insert_new(:rooms, {params.name, params.password})
 
     case room do
       true ->
-        RoomSupervisor.start_child(AppRegistry.using_via("Supervisor:GameStore: "<>params.name), Warships.GameStore, :start_link, [params.name])
-        RoomSupervisor.start_child(AppRegistry.using_via("Supervisor:ShipStore: "<>params.name), Warships.ShipStore, :start_link, [params.name])
-        WarshipsWeb.Endpoint.broadcast("rooms", "room_created", %{:room => params.name})
+        RoomSupervisor.start_child(
+          AppRegistry.using_via("Supervisor:GameStore: " <> params.name),
+          Warships.GameStore,
+          :start_link,
+          [params.name]
+        )
+
+        RoomSupervisor.start_child(
+          AppRegistry.using_via("Supervisor:ShipStore: " <> params.name),
+          Warships.ShipStore,
+          :start_link,
+          [params.name]
+        )
+
+        WarshipsWeb.Endpoint.broadcast("rooms", "rooms_updated", %{:room => params.name})
         {:reply, :ok, state}
 
       false ->
@@ -162,20 +183,22 @@ alias Warships.AppRegistry
       _ -> {:reply, List.first(room), state}
     end
   end
+
   def handle_call({:protected, params}, _from, state) do
     room = :ets.match_object(:rooms, {params.name, :"$1"})
 
     case length(room) do
-      0 -> {:reply, {:error, "Room not found"}, state}
+      0 ->
+        {:reply, {:error, "Room not found"}, state}
+
       _ ->
         cond do
-          String.length(elem(List.first(room),1 )) == 0 ->
+          String.length(elem(List.first(room), 1)) == 0 ->
             {:reply, false, state}
+
           true ->
             {:reply, true, state}
-
         end
-
     end
   end
 
@@ -187,15 +210,15 @@ alias Warships.AppRegistry
 
   def handle_call({:delete, params}, _from, state) do
     :ets.delete(:rooms, params.name)
-    RoomSupervisor.delete_child(AppRegistry.using_via("Supervisor:GameStore: "<>params.name))
-    RoomSupervisor.delete_child(AppRegistry.using_via("Supervisor:ShipStore: "<>params.name))
-    WarshipsWeb.Endpoint.broadcast("rooms", "room_deleted", %{:room => params.name})
+    RoomSupervisor.delete_child(AppRegistry.using_via("Supervisor:GameStore: " <> params.name))
+    RoomSupervisor.delete_child(AppRegistry.using_via("Supervisor:ShipStore: " <> params.name))
+    WarshipsWeb.Endpoint.broadcast("rooms", "rooms_updated", %{:room => params.name})
     {:reply, "Room #{params.name} deleted", state}
   end
 
-
   def handle_call({:verify_password, params}, _from, state) do
     room = :ets.match_object(:rooms, {params.name, params.password})
+
     case length(room) do
       0 -> {:reply, :not_authorized, state}
       _ -> {:reply, :authorized, state}
