@@ -40,4 +40,4 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 - [x] ~~_develop a mechanism responsible for flash message clean up_~~
 - [ ] design a system that will prevent users from opening more than 1 tab; current app implementation removes the player from game and chat when closing one of concurrent app tabs
 - [x] ~~_add a favicon_~~
-- [ ] investigate why manifest.json is not being server correctly
+- [ ] investigate why manifest.json is not being served correctly in prod
