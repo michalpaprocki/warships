@@ -187,17 +187,11 @@ defmodule Warships.GameStore do
         {:reply, :OK, new_state}
 
       {:empty, new_state} ->
-        cond do
-          state.allow_challenge? ->
-            {:reply, :OK,
-             new_state
-             |> Map.replace(:state, :awaiting_players)
-             |> Map.replace(:new_challenger, nil)}
-
-          true ->
-            RoomStore.delete_room(state.game)
-            {:stop, :normal, :kaput, state}
-        end
+        {:reply, :OK,
+         new_state
+         |> Map.replace(:state, :awaiting_players)
+         |> Map.replace(:new_challenger, nil)
+         |> Map.replace(:allow_challenge?, true)}
     end
   end
 

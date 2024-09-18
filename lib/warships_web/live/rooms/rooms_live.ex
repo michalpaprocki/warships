@@ -23,7 +23,8 @@ defmodule WarshipsWeb.Rooms.RoomsLive do
         room ->
           cond do
             # rework this guard
-            GameStore.has_challenge_enabled?(extract_room_name(room)) == false ->
+            GameStore.get_player_count(extract_room_name(room)) === 1 &&
+                GameStore.has_challenge_enabled?(extract_room_name(room)) == false ->
               {:ok,
                socket
                |> put_flash(:error, "User doesn't accept challenges.")
