@@ -58,7 +58,7 @@ defmodule Warships.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
-      {:bcrypt_elixir, "~> 3.1"},
+      {:bcrypt_elixir, "~> 3.2"},
       {:unique_names_generator, "~> 0.2.0"}
 
     ]
